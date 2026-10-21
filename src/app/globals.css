@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+}
+
+body {
+  color: #332725;
+  background-color: #FAF6EF;
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Warm subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #EBD7C2;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C89D7A;
+}
+
+/* Smooth tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Stitch Tactile Elements */
+.washi-tape-rose {
+  background-color: rgba(232, 141, 150, 0.65);
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(46, 38, 35, 0.08);
+}
+
+.washi-tape-sage {
+  background-color: rgba(198, 236, 202, 0.7);
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(46, 38, 35, 0.08);
+}
+
+.washi-tape-butter {
+  background-color: rgba(252, 249, 238, 0.85);
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(46, 38, 35, 0.08);
+}
+
+.polaroid-frame {
+  background-color: #FFFFFF;
+  padding: 12px 12px 28px 12px;
+  border: 1px solid rgba(140, 126, 114, 0.15);
+  box-shadow: 0 8px 20px -4px rgba(46, 38, 35, 0.08), 0 2px 6px -1px rgba(46, 38, 35, 0.04);
+}
+
+@keyframes gentle-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.85;
+  }
+}
+
+.animate-heartbeat {
+  animation: gentle-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes float-up {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-30px) scale(1.3);
+  }
+}
+
+.animate-float-heart {
+  animation: float-up 1.2s ease-out forwards;
+}

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="128" fill="#B93844"/>
+  <!-- Two intertwined minimal rings representing two partners -->
+  <circle cx="210" cy="256" r="85" fill="none" stroke="#FAF6EF" stroke-width="24"/>
+  <circle cx="302" cy="256" r="85" fill="none" stroke="#FAF6EF" stroke-width="24"/>
+</svg>
