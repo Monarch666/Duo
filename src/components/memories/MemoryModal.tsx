@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { X, Camera, Upload } from 'lucide-react';
 import { createMemoryAction } from '@/lib/actions/memories';
+import { compressImageOnClient, savePhotoLocally } from '@/lib/storage/clientPhotos';
 
 interface MemoryModalProps {
   isOpen: boolean;
@@ -70,21 +71,11 @@ export default function MemoryModal({
 
     try {
       if (photoFile) {
-        const formData = new FormData();
-        formData.append('photo', photoFile);
-
-        const uploadRes = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!uploadRes.ok) {
-          const errData = await uploadRes.json();
-          throw new Error(errData.error || 'Failed to upload photo');
-        }
-
-        const uploadJson = await uploadRes.json();
-        photoPath = uploadJson.filename;
+        // Compress locally on client device without server upload
+        const compressedDataUrl = await compressImageOnClient(photoFile);
+        const localId = `local_photo_${Date.now()}`;
+        await savePhotoLocally(localId, compressedDataUrl);
+        photoPath = compressedDataUrl;
       }
 
       const res = await createMemoryAction({

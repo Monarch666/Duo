@@ -121,12 +121,12 @@ export default function MemoriesView({
                   {mem.photoPath ? (
                     <div className="relative w-full h-56 bg-warmth-100 rounded overflow-hidden group/img">
                       <img
-                        src={`/api/uploads/${mem.photoPath}`}
+                        src={mem.photoPath.startsWith('data:') ? mem.photoPath : `/api/uploads/${mem.photoPath}`}
                         alt={mem.title}
                         className="w-full h-full object-cover group-hover/img:scale-102 transition-transform duration-300"
                       />
                       <button
-                        onClick={() => setZoomedPhoto(`/api/uploads/${mem.photoPath}`)}
+                        onClick={() => setZoomedPhoto(mem.photoPath!.startsWith('data:') ? mem.photoPath! : `/api/uploads/${mem.photoPath}`)}
                         className="absolute inset-0 bg-black/25 opacity-0 group-hover/img:opacity-100 transition flex items-center justify-center text-white"
                         title="Enlarge photograph"
                       >

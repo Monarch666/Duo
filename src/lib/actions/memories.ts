@@ -64,7 +64,7 @@ export async function deleteMemoryAction(id: string) {
 
   try {
     const memory = await dal.memories.getById(id);
-    if (memory?.photoPath) {
+    if (memory?.photoPath && !memory.photoPath.startsWith('data:')) {
       // Remove file from disk
       const filePath = path.join(process.cwd(), 'data', 'uploads', path.basename(memory.photoPath));
       if (fs.existsSync(filePath)) {
