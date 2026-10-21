@@ -16,6 +16,7 @@ export default function MemoryModal({
   onClose,
   onMemoryCreated,
 }: MemoryModalProps) {
+  const [title, setTitle] = useState('');
   const [memoryDate, setMemoryDate] = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
