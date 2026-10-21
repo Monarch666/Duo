@@ -13,13 +13,13 @@ import { hashPassword } from '../src/lib/auth/password';
 import crypto from 'crypto';
 
 async function seed() {
-  console.log('[Seed] Seeding Duo database with demo couple...');
+  console.log('[Seed] Seeding Duo database with demo couple (Shivani & Aadarsh)...');
 
   // Clear existing demo couple and demo users if they exist
   await db.delete(schema.couples).where(eq(schema.couples.inviteCode, 'DUO-LOVE'));
 
   const existingUsers = await db.select().from(schema.users);
-  const demoEmails = ['sarah@example.com', 'alex@example.com'];
+  const demoEmails = ['sarah@example.com', 'alex@example.com', 'shivani@example.com', 'aadarsh@example.com'];
   for (const user of existingUsers) {
     if (demoEmails.includes(user.email)) {
       await db.delete(schema.users).where(eq(schema.users.id, user.id));
@@ -28,25 +28,25 @@ async function seed() {
 
   const passwordHash = await hashPassword('Password123!');
 
-  const sarahId = crypto.randomUUID();
-  const alexId = crypto.randomUUID();
+  const shivaniId = crypto.randomUUID();
+  const aadarshId = crypto.randomUUID();
   const coupleId = crypto.randomUUID();
 
   // 1. Create Demo Users
   await db.insert(schema.users)
     .values([
       {
-        id: sarahId,
-        email: 'sarah@example.com',
+        id: shivaniId,
+        email: 'shivani@example.com',
         passwordHash,
-        displayName: 'Sarah Chen',
+        displayName: 'Shivani',
         avatarUrl: null,
       },
       {
-        id: alexId,
-        email: 'alex@example.com',
+        id: aadarshId,
+        email: 'aadarsh@example.com',
         passwordHash,
-        displayName: 'Alex Morgan',
+        displayName: 'Aadarsh',
         avatarUrl: null,
       },
     ]);
@@ -67,13 +67,13 @@ async function seed() {
       {
         id: crypto.randomUUID(),
         coupleId,
-        userId: sarahId,
+        userId: shivaniId,
         role: 'creator',
       },
       {
         id: crypto.randomUUID(),
         coupleId,
-        userId: alexId,
+        userId: aadarshId,
         role: 'partner',
       },
     ]);
@@ -92,9 +92,9 @@ async function seed() {
       {
         id: crypto.randomUUID(),
         coupleId,
-        createdByUserId: sarahId,
+        createdByUserId: shivaniId,
         title: 'Candlelight Italian Dinner',
-        description: 'Table booked at Osteria Mozza - celebrating Alex’s promotion!',
+        description: 'Table booked at Osteria Mozza - celebrating Aadarsh’s promotion!',
         category: 'date_night',
         startAt: nextFriday.toISOString().slice(0, 16),
         isAllDay: false,
@@ -104,7 +104,7 @@ async function seed() {
       {
         id: crypto.randomUUID(),
         coupleId,
-        createdByUserId: alexId,
+        createdByUserId: aadarshId,
         title: 'Weekend Cabin Getaway',
         description: 'Cozy cabin booked with hot tub and fireplace. Bring hiking boots!',
         category: 'trip',
@@ -116,7 +116,7 @@ async function seed() {
       {
         id: crypto.randomUUID(),
         coupleId,
-        createdByUserId: sarahId,
+        createdByUserId: shivaniId,
         title: 'Our Anniversary',
         description: 'Celebrating 3 wonderful years together',
         category: 'anniversary',
@@ -137,7 +137,7 @@ async function seed() {
       {
         id: dateIdeasListId,
         coupleId,
-        createdByUserId: sarahId,
+        createdByUserId: shivaniId,
         title: 'Dream Date Nights',
         category: 'date_ideas',
         icon: 'Sparkles',
@@ -145,7 +145,7 @@ async function seed() {
       {
         id: bucketListId,
         coupleId,
-        createdByUserId: alexId,
+        createdByUserId: aadarshId,
         title: 'Our Life Bucket List',
         category: 'bucket_list',
         icon: 'Compass',
@@ -153,7 +153,7 @@ async function seed() {
       {
         id: groceryListId,
         coupleId,
-        createdByUserId: sarahId,
+        createdByUserId: shivaniId,
         title: 'Sunday Brunch Groceries',
         category: 'groceries',
         icon: 'ShoppingBag',
@@ -166,17 +166,17 @@ async function seed() {
         id: crypto.randomUUID(),
         listId: dateIdeasListId,
         coupleId,
-        createdByUserId: sarahId,
+        createdByUserId: shivaniId,
         content: 'Pottery class together like in Ghost',
         isCompleted: true,
         completedAt: new Date(),
-        completedByUserId: sarahId,
+        completedByUserId: shivaniId,
       },
       {
         id: crypto.randomUUID(),
         listId: dateIdeasListId,
         coupleId,
-        createdByUserId: alexId,
+        createdByUserId: aadarshId,
         content: 'Stargazing picnic at the botanical garden with mulled wine',
         isCompleted: false,
       },
@@ -184,7 +184,7 @@ async function seed() {
         id: crypto.randomUUID(),
         listId: bucketListId,
         coupleId,
-        createdByUserId: alexId,
+        createdByUserId: aadarshId,
         content: 'See the Northern Lights from a glass igloo in Lapland',
         isCompleted: false,
       },
@@ -192,7 +192,7 @@ async function seed() {
         id: crypto.randomUUID(),
         listId: bucketListId,
         coupleId,
-        createdByUserId: sarahId,
+        createdByUserId: shivaniId,
         content: 'Adopt a rescue golden retriever pup',
         isCompleted: false,
       },
@@ -200,17 +200,17 @@ async function seed() {
         id: crypto.randomUUID(),
         listId: groceryListId,
         coupleId,
-        createdByUserId: sarahId,
+        createdByUserId: shivaniId,
         content: 'Organic sourdough loaf',
         isCompleted: true,
         completedAt: new Date(),
-        completedByUserId: alexId,
+        completedByUserId: aadarshId,
       },
       {
         id: crypto.randomUUID(),
         listId: groceryListId,
         coupleId,
-        createdByUserId: alexId,
+        createdByUserId: aadarshId,
         content: 'Pure maple syrup & fresh berries',
         isCompleted: false,
       },
@@ -236,7 +236,7 @@ async function seed() {
         id: crypto.randomUUID(),
         checkinId: currentCheckinId,
         coupleId,
-        userId: sarahId,
+        userId: shivaniId,
         mood: 5,
         answerOne: 'When you surprised me with iced coffee while I was overwhelmed with work deadlines.',
         answerTwo: 'Let’s take a 30-minute evening walk together without our phones.',
@@ -245,7 +245,7 @@ async function seed() {
         id: crypto.randomUUID(),
         checkinId: currentCheckinId,
         coupleId,
-        userId: alexId,
+        userId: aadarshId,
         mood: 5,
         answerOne: 'Cooking homemade pasta and dancing in the kitchen to vintage jazz.',
         answerTwo: 'Just cuddle up and watch the rain together on Sunday morning.',
@@ -258,7 +258,7 @@ async function seed() {
       {
         id: crypto.randomUUID(),
         coupleId,
-        createdByUserId: alexId,
+        createdByUserId: aadarshId,
         title: 'The day we adopted Oliver',
         memoryDate: '2025-11-20',
         note: 'Our little bundle of fur instantly fell asleep in your lap on the drive home. One of the happiest days of my life.',
@@ -266,7 +266,7 @@ async function seed() {
       {
         id: crypto.randomUUID(),
         coupleId,
-        createdByUserId: sarahId,
+        createdByUserId: shivaniId,
         title: 'Sunset in Amalfi Coast',
         memoryDate: '2025-07-14',
         note: 'Sitting on the cliffside balcony with limoncello spritz, watching the boats go by and talking about our dreams for the next decade.',
@@ -279,7 +279,7 @@ async function seed() {
       {
         id: crypto.randomUUID(),
         coupleId,
-        userId: sarahId,
+        userId: shivaniId,
         category: 'favorite_food',
         title: 'Comfort Food & Sweet Treats',
         content: 'Truffle mushroom risotto; Dark chocolate sea salt cookies; Matcha oat latte with honey.',
@@ -287,7 +287,7 @@ async function seed() {
       {
         id: crypto.randomUUID(),
         coupleId,
-        userId: sarahId,
+        userId: shivaniId,
         category: 'love_language',
         title: 'Top Love Languages',
         content: '1. Quality Time (uninterrupted conversations) \n2. Words of Affirmation',
@@ -295,7 +295,7 @@ async function seed() {
       {
         id: crypto.randomUUID(),
         coupleId,
-        userId: alexId,
+        userId: aadarshId,
         category: 'favorite_food',
         title: 'Favorites & Cravings',
         content: 'Neapolitan Margherita pizza; Iced Americano (black); Pistachio gelato.',
@@ -303,7 +303,7 @@ async function seed() {
       {
         id: crypto.randomUUID(),
         coupleId,
-        userId: alexId,
+        userId: aadarshId,
         category: 'love_language',
         title: 'Top Love Languages',
         content: '1. Physical Touch (holding hands, long hugs) \n2. Acts of Service',
@@ -312,8 +312,8 @@ async function seed() {
 
   console.log('[Seed] Demo couple seeded successfully in Supabase!');
   console.log('--------------------------------------------------');
-  console.log('Partner 1: sarah@example.com / Password123!');
-  console.log('Partner 2: alex@example.com  / Password123!');
+  console.log('Partner 1: shivani@example.com / Password123! (Shivani)');
+  console.log('Partner 2: aadarsh@example.com / Password123! (Aadarsh)');
   console.log(`Couple Code: ${inviteCode}`);
   console.log('--------------------------------------------------');
   process.exit(0);

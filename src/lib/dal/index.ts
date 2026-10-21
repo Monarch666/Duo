@@ -248,24 +248,31 @@ export function createCoupleDal(context: DalContext) {
           .where(eq(lists.coupleId, coupleId))
           .orderBy(desc(lists.createdAt));
 
-        // Attach item counts
-        const result = [];
-        for (const list of coupleLists) {
-          const [items] = await db
-            .select({
-              total: sql<number>`count(*)`,
-              completed: sql<number>`sum(case when is_completed = true then 1 else 0 end)`,
-            })
-            .from(listItems)
-            .where(and(eq(listItems.listId, list.id), eq(listItems.coupleId, coupleId)));
+        if (coupleLists.length === 0) return [];
 
-          result.push({
-            ...list,
-            totalItems: items?.total ?? 0,
-            completedItems: items?.completed ?? 0,
-          });
+        const counts = await db
+          .select({
+            listId: listItems.listId,
+            total: sql<number>`count(*)::int`,
+            completed: sql<number>`count(case when is_completed = true then 1 end)::int`,
+          })
+          .from(listItems)
+          .where(eq(listItems.coupleId, coupleId))
+          .groupBy(listItems.listId);
+
+        const countMap = new Map<string, { total: number; completed: number }>();
+        for (const c of counts) {
+          countMap.set(c.listId, { total: Number(c.total) || 0, completed: Number(c.completed) || 0 });
         }
-        return result;
+
+        return coupleLists.map((list) => {
+          const c = countMap.get(list.id);
+          return {
+            ...list,
+            totalItems: c?.total ?? 0,
+            completedItems: c?.completed ?? 0,
+          };
+        });
       },
 
       async getById(id: string) {

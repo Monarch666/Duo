@@ -151,21 +151,21 @@ export default function LoginPage() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => handleDemoLogin('sarah@example.com')}
+                onClick={() => handleDemoLogin('shivani@example.com')}
                 disabled={loading}
                 className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-lg border border-warmth-300 bg-warmth-50 hover:bg-warmth-100 text-warmth-800 transition"
               >
                 <UserCheck className="w-3.5 h-3.5 text-warmth-600" />
-                <span>Sarah (Partner 1)</span>
+                <span>Shivani (Partner 1)</span>
               </button>
               <button
                 type="button"
-                onClick={() => handleDemoLogin('alex@example.com')}
+                onClick={() => handleDemoLogin('aadarsh@example.com')}
                 disabled={loading}
                 className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-lg border border-warmth-300 bg-warmth-50 hover:bg-warmth-100 text-warmth-800 transition"
               >
                 <UserCheck className="w-3.5 h-3.5 text-warmth-600" />
-                <span>Alex (Partner 2)</span>
+                <span>Aadarsh (Partner 2)</span>
               </button>
             </div>
           </div>

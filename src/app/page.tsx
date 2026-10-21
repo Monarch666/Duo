@@ -19,18 +19,30 @@ export default async function HomePage() {
     coupleId: auth.couple.coupleId,
   });
 
-  const coupleInfo = await dal.couple.getDetails();
-  const events = await dal.events.getAll();
-  const lists = await dal.lists.getAll();
-  const checkin = await dal.checkins.getOrCreateWeek(2026, 42, {
-    promptOne: 'What was your favorite moment together this week?',
-    promptTwo: 'What is one thing I can do to make you feel extra loved next week?',
-  });
-  const memories = await dal.memories.getAll();
-  const preferences = await dal.preferences.getAll();
-  const loveNotes = await dal.loveNotes.getAll();
-  const dailyPrompt = await dal.dailyPrompts.getLatest();
-  const partnerMoods = await dal.partnerMoods.getAll();
+  const [
+    coupleInfo,
+    events,
+    lists,
+    checkin,
+    memories,
+    preferences,
+    loveNotes,
+    dailyPrompt,
+    partnerMoods,
+  ] = await Promise.all([
+    dal.couple.getDetails(),
+    dal.events.getAll(),
+    dal.lists.getAll(),
+    dal.checkins.getOrCreateWeek(2026, 42, {
+      promptOne: 'What was your favorite moment together this week?',
+      promptTwo: 'What is one thing I can do to make you feel extra loved next week?',
+    }),
+    dal.memories.getAll(),
+    dal.preferences.getAll(),
+    dal.loveNotes.getAll(),
+    dal.dailyPrompts.getLatest(),
+    dal.partnerMoods.getAll(),
+  ]);
 
   return (
     <DashboardClient

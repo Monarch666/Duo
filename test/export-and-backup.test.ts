@@ -24,7 +24,7 @@ describe('Phase 4: Export, Backup & Data Integrity', () => {
     const [demoUser] = await db
       .select()
       .from(users)
-      .where(eq(users.email, 'sarah@example.com'));
+      .where(eq(users.email, 'shivani@example.com'));
 
     expect(demoUser).toBeDefined();
     if (!demoUser) return;
