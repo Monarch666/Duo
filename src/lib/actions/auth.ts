@@ -54,11 +54,10 @@ export async function signUpAction(formData: unknown): Promise<ActionResponse> {
   const normalizedEmail = email.toLowerCase().trim();
 
   // Check if email already registered
-  const existing = db
+  const [existing] = await db
     .select({ id: users.id })
     .from(users)
-    .where(eq(users.email, normalizedEmail))
-    .get();
+    .where(eq(users.email, normalizedEmail));
 
   if (existing) {
     return {
@@ -72,14 +71,13 @@ export async function signUpAction(formData: unknown): Promise<ActionResponse> {
   const passwordHash = await hashPassword(password);
   const userId = crypto.randomUUID();
 
-  db.insert(users)
+  await db.insert(users)
     .values({
       id: userId,
       email: normalizedEmail,
       passwordHash,
       displayName: displayName.trim(),
-    })
-    .run();
+    });
 
   // Create session and set cookie
   const reqHeaders = await headers();
@@ -108,7 +106,7 @@ export async function logInAction(formData: unknown): Promise<ActionResponse> {
   const userAgent = reqHeaders.get('user-agent') || undefined;
   const ip = reqHeaders.get('x-forwarded-for') || '127.0.0.1';
 
-  // Enforce SQLite rate limiting
+  // Enforce rate limiting
   const rateLimit = await checkLoginRateLimit(normalizedEmail, ip);
   if (!rateLimit.allowed) {
     return {
@@ -119,11 +117,10 @@ export async function logInAction(formData: unknown): Promise<ActionResponse> {
   }
 
   // Find user
-  const user = db
+  const [user] = await db
     .select()
     .from(users)
-    .where(eq(users.email, normalizedEmail))
-    .get();
+    .where(eq(users.email, normalizedEmail));
 
   if (!user) {
     await recordFailedLoginAttempt(normalizedEmail, ip);

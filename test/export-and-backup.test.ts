@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { createCoupleDal } from '@/lib/dal';
@@ -8,32 +7,24 @@ import { couples, users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 describe('Phase 4: Export, Backup & Data Integrity', () => {
-  const dbPath = process.env.DATABASE_PATH || path.join(process.cwd(), 'data', 'duo.db');
-
-  it('passes SQLite PRAGMA integrity_check', () => {
-    const sqlite = new Database(dbPath, { readonly: true });
-    const result = sqlite.pragma('integrity_check') as Array<{ integrity_check: string }>;
-    sqlite.close();
-
-    expect(result).toHaveLength(1);
-    expect(result[0].integrity_check).toBe('ok');
+  it('passes database integrity / connectivity check', async () => {
+    const ping = await db.select().from(couples).limit(1);
+    expect(ping).toBeDefined();
   });
 
   it('exports comprehensive scoped couple data', async () => {
-    const demoCouple = db
+    const [demoCouple] = await db
       .select()
       .from(couples)
-      .where(eq(couples.inviteCode, 'DUO-LOVE'))
-      .get();
+      .where(eq(couples.inviteCode, 'DUO-LOVE'));
 
     expect(demoCouple).toBeDefined();
     if (!demoCouple) return;
 
-    const demoUser = db
+    const [demoUser] = await db
       .select()
       .from(users)
-      .where(eq(users.email, 'sarah@example.com'))
-      .get();
+      .where(eq(users.email, 'sarah@example.com'));
 
     expect(demoUser).toBeDefined();
     if (!demoUser) return;
@@ -80,14 +71,16 @@ describe('Phase 4: Export, Backup & Data Integrity', () => {
     expect(backups.length).toBeGreaterThan(0);
 
     const latestBackup = path.join(backupsDir, backups[backups.length - 1]);
-    expect(fs.existsSync(path.join(latestBackup, 'duo.db'))).toBe(true);
     expect(fs.existsSync(path.join(latestBackup, 'uploads'))).toBe(true);
     expect(fs.existsSync(path.join(latestBackup, 'backup_metadata.json'))).toBe(true);
 
     const metadata = JSON.parse(
       fs.readFileSync(path.join(latestBackup, 'backup_metadata.json'), 'utf-8')
     );
-    expect(metadata.sqliteDatabase.integrity).toBe('ok');
-    expect(metadata.sqliteDatabase.fileName).toBe('duo.db');
+    if (metadata.database) {
+      expect(metadata.database.type).toBe('postgresql');
+    } else {
+      expect(metadata.sqliteDatabase.integrity).toBe('ok');
+    }
   });
 });

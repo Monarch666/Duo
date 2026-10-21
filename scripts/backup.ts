@@ -1,6 +1,14 @@
 import fs from 'fs';
 import path from 'path';
-import Database from 'better-sqlite3';
+
+if (fs.existsSync('.env.local')) {
+  process.loadEnvFile('.env.local');
+} else if (fs.existsSync('.env')) {
+  process.loadEnvFile('.env');
+}
+
+import { db } from '../src/lib/db';
+import * as schema from '../src/lib/db/schema';
 
 async function performBackup() {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -8,40 +16,54 @@ async function performBackup() {
   const backupsRoot = path.join(process.cwd(), 'backups');
   const targetBackupDir = path.join(backupsRoot, backupDirName);
 
-  console.log(`[Backup] Starting Duo local backup: ${backupDirName}`);
-
-  const dataDir = path.join(process.cwd(), 'data');
-  const dbPath = path.join(dataDir, 'duo.db');
-  const uploadsDir = path.join(dataDir, 'uploads');
-
-  if (!fs.existsSync(dbPath)) {
-    console.error(`[Backup Error] Database file not found at: ${dbPath}`);
-    process.exit(1);
-  }
+  console.log(`[Backup] Starting Duo cloud backup: ${backupDirName}`);
 
   // Ensure backup target directory exists
   fs.mkdirSync(targetBackupDir, { recursive: true });
 
-  // 1. Verify SQLite database integrity before backup
-  console.log('[Backup] Running SQLite PRAGMA integrity_check...');
-  const db = new Database(dbPath, { readonly: true });
-  const integrityResult = db.pragma('integrity_check') as Array<{ integrity_check: string }>;
-  const isHealthy = integrityResult.length === 1 && integrityResult[0].integrity_check === 'ok';
+  // 1. Export all tables from Supabase PostgreSQL
+  console.log('[Backup] Exporting database tables from Supabase...');
+  const couplesData = await db.select().from(schema.couples);
+  const usersData = await db.select().from(schema.users);
+  const coupleMembersData = await db.select().from(schema.coupleMembers);
+  const eventsData = await db.select().from(schema.events);
+  const listsData = await db.select().from(schema.lists);
+  const listItemsData = await db.select().from(schema.listItems);
+  const checkinsData = await db.select().from(schema.checkins);
+  const checkinAnswersData = await db.select().from(schema.checkinAnswers);
+  const memoriesData = await db.select().from(schema.memories);
+  const preferencesData = await db.select().from(schema.preferences);
+  const notesData = await db.select().from(schema.loveNotes);
+  const noteRepliesData = await db.select().from(schema.loveNoteReplies);
+  const moodsData = await db.select().from(schema.partnerMoods);
+  const promptsData = await db.select().from(schema.dailyPrompts);
+  const promptAnswersData = await db.select().from(schema.dailyPromptAnswers);
 
-  if (!isHealthy) {
-    console.error('[Backup Error] SQLite integrity check failed:', integrityResult);
-    db.close();
-    process.exit(1);
-  }
-  console.log('[Backup] SQLite database integrity verified: OK');
+  const dbSnapshot = {
+    couples: couplesData,
+    users: usersData,
+    coupleMembers: coupleMembersData,
+    events: eventsData,
+    lists: listsData,
+    listItems: listItemsData,
+    checkins: checkinsData,
+    checkinAnswers: checkinAnswersData,
+    memories: memoriesData,
+    preferences: preferencesData,
+    loveNotes: notesData,
+    loveNoteReplies: noteRepliesData,
+    partnerMoods: moodsData,
+    dailyPrompts: promptsData,
+    dailyPromptAnswers: promptAnswersData,
+  };
 
-  // 2. Perform safe SQLite backup (handles WAL file locks cleanly)
-  const destDbPath = path.join(targetBackupDir, 'duo.db');
-  console.log(`[Backup] Backing up SQLite database to: ${destDbPath}`);
-  await db.backup(destDbPath);
-  db.close();
+  const destDbPath = path.join(targetBackupDir, 'database_dump.json');
+  fs.writeFileSync(destDbPath, JSON.stringify(dbSnapshot, null, 2), 'utf-8');
+  console.log(`[Backup] Database dump saved to: ${destDbPath}`);
 
-  // 3. Backup Uploads Directory
+  // 2. Backup Uploads Directory if present
+  const dataDir = path.join(process.cwd(), 'data');
+  const uploadsDir = path.join(dataDir, 'uploads');
   const destUploadsDir = path.join(targetBackupDir, 'uploads');
   fs.mkdirSync(destUploadsDir, { recursive: true });
 
@@ -59,15 +81,18 @@ async function performBackup() {
   }
   console.log(`[Backup] Copied ${uploadedFileCount} uploaded memory photos to backup`);
 
-  // 4. Write backup metadata
+  // 3. Write backup metadata
   const dbStat = fs.statSync(destDbPath);
   const metadata = {
     backupDate: new Date().toISOString(),
     backupId: backupDirName,
-    sqliteDatabase: {
-      fileName: 'duo.db',
+    database: {
+      type: 'postgresql',
+      fileName: 'database_dump.json',
       bytes: dbStat.size,
-      integrity: 'ok',
+      totalUsers: usersData.length,
+      totalCouples: couplesData.length,
+      totalMemories: memoriesData.length,
     },
     uploads: {
       count: uploadedFileCount,
@@ -84,9 +109,10 @@ async function performBackup() {
   console.log('--------------------------------------------------');
   console.log(`[Backup] Backup completed successfully!`);
   console.log(`[Backup] Location: ${targetBackupDir}`);
-  console.log(`[Backup] Database Size: ${(dbStat.size / 1024).toFixed(1)} KB`);
+  console.log(`[Backup] Dump Size: ${(dbStat.size / 1024).toFixed(1)} KB`);
   console.log(`[Backup] Photos Backed Up: ${uploadedFileCount}`);
   console.log('--------------------------------------------------');
+  process.exit(0);
 }
 
 performBackup().catch((err) => {

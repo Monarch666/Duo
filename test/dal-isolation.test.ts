@@ -1,6 +1,4 @@
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
-import Database from 'better-sqlite3';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
 import * as schema from '@/lib/db/schema';
 import { createCoupleDal, UnauthorizedCoupleAccessError } from '@/lib/dal';
 import { createCoupleSpace, joinCoupleSpace } from '@/lib/auth/pairing';
@@ -36,15 +34,14 @@ describe('Duo DAL Isolation and Security Suite', () => {
     const passHash = await hashPassword('SecretPass123!');
 
     // Insert users
-    db.insert(schema.users)
+    await db.insert(schema.users)
       .values([
         { id: userA1Id, email: `a1_${Date.now()}@test.com`, passwordHash: passHash, displayName: 'Alice' },
         { id: userA2Id, email: `a2_${Date.now()}@test.com`, passwordHash: passHash, displayName: 'Aaron' },
         { id: userB1Id, email: `b1_${Date.now()}@test.com`, passwordHash: passHash, displayName: 'Beth' },
         { id: userB2Id, email: `b2_${Date.now()}@test.com`, passwordHash: passHash, displayName: 'Bob' },
         { id: userCId, email: `c_${Date.now()}@test.com`, passwordHash: passHash, displayName: 'Charlie' },
-      ])
-      .run();
+      ]);
 
     // Couple A
     const resA = await createCoupleSpace(userA1Id);

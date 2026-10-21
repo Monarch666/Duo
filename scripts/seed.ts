@@ -1,35 +1,28 @@
-import Database from 'better-sqlite3';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
+import fs from 'fs';
+
+if (fs.existsSync('.env.local')) {
+  process.loadEnvFile('.env.local');
+} else if (fs.existsSync('.env')) {
+  process.loadEnvFile('.env');
+}
+
+import { db } from '../src/lib/db';
 import * as schema from '../src/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { hashPassword } from '../src/lib/auth/password';
 import crypto from 'crypto';
-import path from 'path';
-import fs from 'fs';
 
 async function seed() {
   console.log('[Seed] Seeding Duo database with demo couple...');
 
-  const dbPath = process.env.DATABASE_PATH || path.join(process.cwd(), 'data', 'duo.db');
-  const dbDir = path.dirname(path.resolve(dbPath));
-  if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
-  }
-
-  const sqlite = new Database(dbPath);
-  sqlite.pragma('journal_mode = WAL');
-  sqlite.pragma('foreign_keys = ON');
-
-  const db = drizzle(sqlite, { schema });
-
   // Clear existing demo couple and demo users if they exist
-  db.delete(schema.couples).where(eq(schema.couples.inviteCode, 'DUO-LOVE')).run();
+  await db.delete(schema.couples).where(eq(schema.couples.inviteCode, 'DUO-LOVE'));
 
-  const existingUsers = db.select().from(schema.users).all();
+  const existingUsers = await db.select().from(schema.users);
   const demoEmails = ['sarah@example.com', 'alex@example.com'];
   for (const user of existingUsers) {
     if (demoEmails.includes(user.email)) {
-      db.delete(schema.users).where(eq(schema.users.id, user.id)).run();
+      await db.delete(schema.users).where(eq(schema.users.id, user.id));
     }
   }
 
@@ -40,7 +33,7 @@ async function seed() {
   const coupleId = crypto.randomUUID();
 
   // 1. Create Demo Users
-  db.insert(schema.users)
+  await db.insert(schema.users)
     .values([
       {
         id: sarahId,
@@ -56,22 +49,20 @@ async function seed() {
         displayName: 'Alex Morgan',
         avatarUrl: null,
       },
-    ])
-    .run();
+    ]);
 
   // 2. Create Paired Couple Space
   const inviteCode = 'DUO-LOVE';
-  db.insert(schema.couples)
+  await db.insert(schema.couples)
     .values({
       id: coupleId,
       inviteCode,
       anniversaryDate: '2023-06-15',
       status: 'paired',
-    })
-    .run();
+    });
 
   // 3. Link Members
-  db.insert(schema.coupleMembers)
+  await db.insert(schema.coupleMembers)
     .values([
       {
         id: crypto.randomUUID(),
@@ -85,8 +76,7 @@ async function seed() {
         userId: alexId,
         role: 'partner',
       },
-    ])
-    .run();
+    ]);
 
   // 4. Seed Events
   const now = new Date();
@@ -97,7 +87,7 @@ async function seed() {
   const weekendTrip = new Date(now);
   weekendTrip.setDate(now.getDate() + 14);
 
-  db.insert(schema.events)
+  await db.insert(schema.events)
     .values([
       {
         id: crypto.randomUUID(),
@@ -135,15 +125,14 @@ async function seed() {
         location: 'Our favorite rooftop',
         color: '#E11D48',
       },
-    ])
-    .run();
+    ]);
 
   // 5. Seed Lists & Items
   const dateIdeasListId = crypto.randomUUID();
   const bucketListId = crypto.randomUUID();
   const groceryListId = crypto.randomUUID();
 
-  db.insert(schema.lists)
+  await db.insert(schema.lists)
     .values([
       {
         id: dateIdeasListId,
@@ -169,10 +158,9 @@ async function seed() {
         category: 'groceries',
         icon: 'ShoppingBag',
       },
-    ])
-    .run();
+    ]);
 
-  db.insert(schema.listItems)
+  await db.insert(schema.listItems)
     .values([
       {
         id: crypto.randomUUID(),
@@ -226,12 +214,11 @@ async function seed() {
         content: 'Pure maple syrup & fresh berries',
         isCompleted: false,
       },
-    ])
-    .run();
+    ]);
 
   // 6. Seed Weekly Check-in (Current Week, Revealed)
   const currentCheckinId = crypto.randomUUID();
-  db.insert(schema.checkins)
+  await db.insert(schema.checkins)
     .values({
       id: currentCheckinId,
       coupleId,
@@ -241,10 +228,9 @@ async function seed() {
       promptTwo: 'What is one thing I can do to make you feel extra loved next week?',
       status: 'revealed',
       revealedAt: new Date(),
-    })
-    .run();
+    });
 
-  db.insert(schema.checkinAnswers)
+  await db.insert(schema.checkinAnswers)
     .values([
       {
         id: crypto.randomUUID(),
@@ -264,11 +250,10 @@ async function seed() {
         answerOne: 'Cooking homemade pasta and dancing in the kitchen to vintage jazz.',
         answerTwo: 'Just cuddle up and watch the rain together on Sunday morning.',
       },
-    ])
-    .run();
+    ]);
 
   // 7. Seed Memories
-  db.insert(schema.memories)
+  await db.insert(schema.memories)
     .values([
       {
         id: crypto.randomUUID(),
@@ -286,11 +271,10 @@ async function seed() {
         memoryDate: '2025-07-14',
         note: 'Sitting on the cliffside balcony with limoncello spritz, watching the boats go by and talking about our dreams for the next decade.',
       },
-    ])
-    .run();
+    ]);
 
   // 8. Seed Partner Preferences
-  db.insert(schema.preferences)
+  await db.insert(schema.preferences)
     .values([
       {
         id: crypto.randomUUID(),
@@ -324,15 +308,15 @@ async function seed() {
         title: 'Top Love Languages',
         content: '1. Physical Touch (holding hands, long hugs) \n2. Acts of Service',
       },
-    ])
-    .run();
+    ]);
 
-  console.log('[Seed] Demo couple seeded successfully!');
+  console.log('[Seed] Demo couple seeded successfully in Supabase!');
   console.log('--------------------------------------------------');
   console.log('Partner 1: sarah@example.com / Password123!');
   console.log('Partner 2: alex@example.com  / Password123!');
   console.log(`Couple Code: ${inviteCode}`);
   console.log('--------------------------------------------------');
+  process.exit(0);
 }
 
 seed().catch((err) => {

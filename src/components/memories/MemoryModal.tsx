@@ -184,7 +184,7 @@ export default function MemoryModal({
                   Select a photo to attach
                 </p>
                 <p className="text-[11px] text-warmth-500 mt-0.5">
-                  Saved locally in ./data/uploads
+                  Stored securely on your client device (never sent to server)
                 </p>
               </div>
             )}

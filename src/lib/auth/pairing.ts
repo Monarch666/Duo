@@ -31,11 +31,10 @@ export async function createCoupleSpace(
   anniversaryDate?: string
 ): Promise<PairingResult> {
   // Check if user is already in a couple
-  const existingMembership = db
+  const [existingMembership] = await db
     .select()
     .from(coupleMembers)
-    .where(eq(coupleMembers.userId, userId))
-    .get();
+    .where(eq(coupleMembers.userId, userId));
 
   if (existingMembership) {
     return {
@@ -48,11 +47,10 @@ export async function createCoupleSpace(
   let inviteCode = generateInviteCode();
   let attempts = 0;
   while (attempts < 10) {
-    const existing = db
+    const [existing] = await db
       .select({ id: couples.id })
       .from(couples)
-      .where(eq(couples.inviteCode, inviteCode))
-      .get();
+      .where(eq(couples.inviteCode, inviteCode));
     if (!existing) break;
     inviteCode = generateInviteCode();
     attempts++;
@@ -61,33 +59,29 @@ export async function createCoupleSpace(
   const coupleId = crypto.randomUUID();
   const memberId = crypto.randomUUID();
 
-  // Run in transaction
-  const result = db.transaction((tx) => {
-    tx.insert(couples)
+  // Run in async transaction
+  await db.transaction(async (tx) => {
+    await tx.insert(couples)
       .values({
         id: coupleId,
         inviteCode,
         anniversaryDate: anniversaryDate || null,
         status: 'pending',
-      })
-      .run();
+      });
 
-    tx.insert(coupleMembers)
+    await tx.insert(coupleMembers)
       .values({
         id: memberId,
         coupleId,
         userId,
         role: 'creator',
-      })
-      .run();
-
-    return { coupleId, inviteCode };
+      });
   });
 
   return {
     success: true,
-    coupleId: result.coupleId,
-    inviteCode: result.inviteCode,
+    coupleId,
+    inviteCode,
   };
 }
 
@@ -101,11 +95,10 @@ export async function joinCoupleSpace(
   const cleanedCode = inviteCode.trim().toUpperCase();
 
   // Check if user is already in a couple
-  const existingMembership = db
+  const [existingMembership] = await db
     .select()
     .from(coupleMembers)
-    .where(eq(coupleMembers.userId, userId))
-    .get();
+    .where(eq(coupleMembers.userId, userId));
 
   if (existingMembership) {
     return {
@@ -115,11 +108,10 @@ export async function joinCoupleSpace(
   }
 
   // Find couple by invite code
-  const couple = db
+  const [couple] = await db
     .select()
     .from(couples)
-    .where(eq(couples.inviteCode, cleanedCode))
-    .get();
+    .where(eq(couples.inviteCode, cleanedCode));
 
   if (!couple) {
     return {
@@ -129,11 +121,10 @@ export async function joinCoupleSpace(
   }
 
   // Strict hard limit check: count current members
-  const memberCountResult = db
+  const [memberCountResult] = await db
     .select({ count: sql<number>`count(*)` })
     .from(coupleMembers)
-    .where(eq(coupleMembers.coupleId, couple.id))
-    .get();
+    .where(eq(coupleMembers.coupleId, couple.id));
 
   const count = memberCountResult?.count ?? 0;
   if (count >= 2) {
@@ -146,23 +137,21 @@ export async function joinCoupleSpace(
   // Add partner to couple and update status to 'paired'
   const memberId = crypto.randomUUID();
 
-  db.transaction((tx) => {
-    tx.insert(coupleMembers)
+  await db.transaction(async (tx) => {
+    await tx.insert(coupleMembers)
       .values({
         id: memberId,
         coupleId: couple.id,
         userId,
         role: 'partner',
-      })
-      .run();
+      });
 
-    tx.update(couples)
+    await tx.update(couples)
       .set({
         status: 'paired',
         updatedAt: new Date(),
       })
-      .where(eq(couples.id, couple.id))
-      .run();
+      .where(eq(couples.id, couple.id));
   });
 
   return {

@@ -19,12 +19,11 @@ describe('Phase 2: Calendar, Lists, and Realtime Engine Suite', () => {
     user2Id = crypto.randomUUID();
     const passHash = await hashPassword('Secret123!');
 
-    db.insert(schema.users)
+    await db.insert(schema.users)
       .values([
         { id: user1Id, email: `phase2_u1_${Date.now()}@test.com`, passwordHash: passHash, displayName: 'Emma' },
         { id: user2Id, email: `phase2_u2_${Date.now()}@test.com`, passwordHash: passHash, displayName: 'Liam' },
-      ])
-      .run();
+      ]);
 
     const created = await createCoupleSpace(user1Id);
     coupleId = created.coupleId!;

@@ -48,15 +48,14 @@ export function createCoupleDal(context: DalContext) {
     // ==================== COUPLE SPACE & UNLINK ====================
     couple: {
       async getDetails() {
-        const couple = db
+        const [couple] = await db
           .select()
           .from(couples)
-          .where(eq(couples.id, coupleId))
-          .get();
+          .where(eq(couples.id, coupleId));
 
         if (!couple) throw new UnauthorizedCoupleAccessError();
 
-        const members = db
+        const members = await db
           .select({
             id: users.id,
             displayName: users.displayName,
@@ -67,8 +66,7 @@ export function createCoupleDal(context: DalContext) {
           })
           .from(coupleMembers)
           .innerJoin(users, eq(users.id, coupleMembers.userId))
-          .where(eq(coupleMembers.coupleId, coupleId))
-          .all();
+          .where(eq(coupleMembers.coupleId, coupleId));
 
         const partner = members.find((m) => m.id !== userId);
         const me = members.find((m) => m.id === userId);
@@ -77,28 +75,28 @@ export function createCoupleDal(context: DalContext) {
       },
 
       async updateAnniversary(anniversaryDate: string) {
-        return db
+        const [updated] = await db
           .update(couples)
           .set({ anniversaryDate, updatedAt: new Date() })
           .where(eq(couples.id, coupleId))
-          .returning()
-          .get();
+          .returning();
+        return updated;
       },
 
       async exportAllData() {
-        const couple = db.select().from(couples).where(eq(couples.id, coupleId)).get();
-        const coupleEvents = db.select().from(events).where(eq(events.coupleId, coupleId)).all();
-        const coupleLists = db.select().from(lists).where(eq(lists.coupleId, coupleId)).all();
-        const coupleListItems = db.select().from(listItems).where(eq(listItems.coupleId, coupleId)).all();
-        const coupleCheckins = db.select().from(checkins).where(eq(checkins.coupleId, coupleId)).all();
-        const coupleAnswers = db.select().from(checkinAnswers).where(eq(checkinAnswers.coupleId, coupleId)).all();
-        const coupleMemories = db.select().from(memories).where(eq(memories.coupleId, coupleId)).all();
-        const couplePreferences = db.select().from(preferences).where(eq(preferences.coupleId, coupleId)).all();
-        const coupleNotes = db.select().from(loveNotes).where(eq(loveNotes.coupleId, coupleId)).all();
-        const coupleReplies = db.select().from(loveNoteReplies).where(eq(loveNoteReplies.coupleId, coupleId)).all();
-        const couplePrompts = db.select().from(dailyPrompts).where(eq(dailyPrompts.coupleId, coupleId)).all();
-        const couplePromptAnswers = db.select().from(dailyPromptAnswers).where(eq(dailyPromptAnswers.coupleId, coupleId)).all();
-        const coupleMoods = db.select().from(partnerMoods).where(eq(partnerMoods.coupleId, coupleId)).all();
+        const [couple] = await db.select().from(couples).where(eq(couples.id, coupleId));
+        const coupleEvents = await db.select().from(events).where(eq(events.coupleId, coupleId));
+        const coupleLists = await db.select().from(lists).where(eq(lists.coupleId, coupleId));
+        const coupleListItems = await db.select().from(listItems).where(eq(listItems.coupleId, coupleId));
+        const coupleCheckins = await db.select().from(checkins).where(eq(checkins.coupleId, coupleId));
+        const coupleAnswers = await db.select().from(checkinAnswers).where(eq(checkinAnswers.coupleId, coupleId));
+        const coupleMemories = await db.select().from(memories).where(eq(memories.coupleId, coupleId));
+        const couplePreferences = await db.select().from(preferences).where(eq(preferences.coupleId, coupleId));
+        const coupleNotes = await db.select().from(loveNotes).where(eq(loveNotes.coupleId, coupleId));
+        const coupleReplies = await db.select().from(loveNoteReplies).where(eq(loveNoteReplies.coupleId, coupleId));
+        const couplePrompts = await db.select().from(dailyPrompts).where(eq(dailyPrompts.coupleId, coupleId));
+        const couplePromptAnswers = await db.select().from(dailyPromptAnswers).where(eq(dailyPromptAnswers.coupleId, coupleId));
+        const coupleMoods = await db.select().from(partnerMoods).where(eq(partnerMoods.coupleId, coupleId));
 
         return {
           exportedAt: new Date().toISOString(),
@@ -119,8 +117,8 @@ export function createCoupleDal(context: DalContext) {
       },
 
       async unlinkAndDestroy() {
-        // SQLite foreign keys ON DELETE CASCADE will clean up all child records
-        return db.delete(couples).where(eq(couples.id, coupleId)).run();
+        // PostgreSQL foreign keys ON DELETE CASCADE will clean up all child records
+        await db.delete(couples).where(eq(couples.id, coupleId));
       },
     },
 
@@ -133,7 +131,7 @@ export function createCoupleDal(context: DalContext) {
           conditions = and(conditions, eq(events.category, filters.category as any))!;
         }
 
-        const rows = db
+        const rows = await db
           .select({
             id: events.id,
             coupleId: events.coupleId,
@@ -152,8 +150,7 @@ export function createCoupleDal(context: DalContext) {
           .from(events)
           .innerJoin(users, eq(users.id, events.createdByUserId))
           .where(conditions)
-          .orderBy(asc(events.startAt))
-          .all();
+          .orderBy(asc(events.startAt));
 
         if (filters?.month) {
           // filters.month is YYYY-MM
@@ -164,11 +161,11 @@ export function createCoupleDal(context: DalContext) {
       },
 
       async getById(id: string) {
-        return db
+        const [row] = await db
           .select()
           .from(events)
-          .where(and(eq(events.id, id), eq(events.coupleId, coupleId)))
-          .get() ?? null;
+          .where(and(eq(events.id, id), eq(events.coupleId, coupleId)));
+        return row ?? null;
       },
 
       async create(data: {
@@ -184,7 +181,7 @@ export function createCoupleDal(context: DalContext) {
         const id = crypto.randomUUID();
         const now = new Date();
 
-        return db
+        const [row] = await db
           .insert(events)
           .values({
             id,
@@ -201,8 +198,8 @@ export function createCoupleDal(context: DalContext) {
             createdAt: now,
             updatedAt: now,
           })
-          .returning()
-          .get();
+          .returning();
+        return row;
       },
 
       async update(
@@ -221,72 +218,69 @@ export function createCoupleDal(context: DalContext) {
         const existing = await this.getById(id);
         if (!existing) throw new UnauthorizedCoupleAccessError('Event not found or access denied.');
 
-        return db
+        const [row] = await db
           .update(events)
           .set({
             ...data,
             updatedAt: new Date(),
           })
           .where(and(eq(events.id, id), eq(events.coupleId, coupleId)))
-          .returning()
-          .get();
+          .returning();
+        return row;
       },
 
       async delete(id: string) {
         const existing = await this.getById(id);
         if (!existing) throw new UnauthorizedCoupleAccessError('Event not found or access denied.');
 
-        return db
+        await db
           .delete(events)
-          .where(and(eq(events.id, id), eq(events.coupleId, coupleId)))
-          .run();
+          .where(and(eq(events.id, id), eq(events.coupleId, coupleId)));
       },
     },
 
     // ==================== SHARED LISTS & ITEMS ====================
     lists: {
       async getAll() {
-        const coupleLists = db
+        const coupleLists = await db
           .select()
           .from(lists)
           .where(eq(lists.coupleId, coupleId))
-          .orderBy(desc(lists.createdAt))
-          .all();
+          .orderBy(desc(lists.createdAt));
 
         // Attach item counts
-        return coupleLists.map((list) => {
-          const items = db
+        const result = [];
+        for (const list of coupleLists) {
+          const [items] = await db
             .select({
               total: sql<number>`count(*)`,
-              completed: sql<number>`sum(case when is_completed = 1 then 1 else 0 end)`,
+              completed: sql<number>`sum(case when is_completed = true then 1 else 0 end)`,
             })
             .from(listItems)
-            .where(and(eq(listItems.listId, list.id), eq(listItems.coupleId, coupleId)))
-            .get();
+            .where(and(eq(listItems.listId, list.id), eq(listItems.coupleId, coupleId)));
 
-          return {
+          result.push({
             ...list,
             totalItems: items?.total ?? 0,
             completedItems: items?.completed ?? 0,
-          };
-        });
+          });
+        }
+        return result;
       },
 
       async getById(id: string) {
-        const list = db
+        const [list] = await db
           .select()
           .from(lists)
-          .where(and(eq(lists.id, id), eq(lists.coupleId, coupleId)))
-          .get();
+          .where(and(eq(lists.id, id), eq(lists.coupleId, coupleId)));
 
         if (!list) return null;
 
-        const items = db
+        const items = await db
           .select()
           .from(listItems)
           .where(and(eq(listItems.listId, id), eq(listItems.coupleId, coupleId)))
-          .orderBy(asc(listItems.isCompleted), asc(listItems.sortOrder), desc(listItems.createdAt))
-          .all();
+          .orderBy(asc(listItems.isCompleted), asc(listItems.sortOrder), desc(listItems.createdAt));
 
         return { ...list, items };
       },
@@ -299,7 +293,7 @@ export function createCoupleDal(context: DalContext) {
         const id = crypto.randomUUID();
         const now = new Date();
 
-        return db
+        const [row] = await db
           .insert(lists)
           .values({
             id,
@@ -311,36 +305,34 @@ export function createCoupleDal(context: DalContext) {
             createdAt: now,
             updatedAt: now,
           })
-          .returning()
-          .get();
+          .returning();
+        return row;
       },
 
       async delete(id: string) {
         const list = await this.getById(id);
         if (!list) throw new UnauthorizedCoupleAccessError('List not found or access denied.');
 
-        return db
+        await db
           .delete(lists)
-          .where(and(eq(lists.id, id), eq(lists.coupleId, coupleId)))
-          .run();
+          .where(and(eq(lists.id, id), eq(lists.coupleId, coupleId)));
       },
     },
 
     listItems: {
       async addItem(listId: string, content: string) {
         // Verify list ownership
-        const list = db
+        const [list] = await db
           .select({ id: lists.id })
           .from(lists)
-          .where(and(eq(lists.id, listId), eq(lists.coupleId, coupleId)))
-          .get();
+          .where(and(eq(lists.id, listId), eq(lists.coupleId, coupleId)));
 
         if (!list) throw new UnauthorizedCoupleAccessError('List does not belong to this couple.');
 
         const id = crypto.randomUUID();
         const now = new Date();
 
-        return db
+        const [row] = await db
           .insert(listItems)
           .values({
             id,
@@ -352,21 +344,20 @@ export function createCoupleDal(context: DalContext) {
             createdAt: now,
             updatedAt: now,
           })
-          .returning()
-          .get();
+          .returning();
+        return row;
       },
 
       async toggleItem(itemId: string, isCompleted: boolean) {
-        const item = db
+        const [item] = await db
           .select()
           .from(listItems)
-          .where(and(eq(listItems.id, itemId), eq(listItems.coupleId, coupleId)))
-          .get();
+          .where(and(eq(listItems.id, itemId), eq(listItems.coupleId, coupleId)));
 
         if (!item) throw new UnauthorizedCoupleAccessError('Item not found or access denied.');
 
         const now = new Date();
-        return db
+        const [row] = await db
           .update(listItems)
           .set({
             isCompleted,
@@ -375,23 +366,21 @@ export function createCoupleDal(context: DalContext) {
             updatedAt: now,
           })
           .where(and(eq(listItems.id, itemId), eq(listItems.coupleId, coupleId)))
-          .returning()
-          .get();
+          .returning();
+        return row;
       },
 
       async deleteItem(itemId: string) {
-        const item = db
+        const [item] = await db
           .select()
           .from(listItems)
-          .where(and(eq(listItems.id, itemId), eq(listItems.coupleId, coupleId)))
-          .get();
+          .where(and(eq(listItems.id, itemId), eq(listItems.coupleId, coupleId)));
 
         if (!item) throw new UnauthorizedCoupleAccessError('Item not found or access denied.');
 
-        return db
+        await db
           .delete(listItems)
-          .where(and(eq(listItems.id, itemId), eq(listItems.coupleId, coupleId)))
-          .run();
+          .where(and(eq(listItems.id, itemId), eq(listItems.coupleId, coupleId)));
       },
     },
 
@@ -402,7 +391,7 @@ export function createCoupleDal(context: DalContext) {
         weekNumber: number,
         defaultPrompts: { promptOne: string; promptTwo: string }
       ) {
-        let checkin = db
+        let [checkin] = await db
           .select()
           .from(checkins)
           .where(
@@ -411,12 +400,11 @@ export function createCoupleDal(context: DalContext) {
               eq(checkins.year, year),
               eq(checkins.weekNumber, weekNumber)
             )
-          )
-          .get();
+          );
 
         if (!checkin) {
           const id = crypto.randomUUID();
-          checkin = db
+          [checkin] = await db
             .insert(checkins)
             .values({
               id,
@@ -427,23 +415,21 @@ export function createCoupleDal(context: DalContext) {
               promptTwo: defaultPrompts.promptTwo,
               status: 'pending',
             })
-            .returning()
-            .get();
+            .returning();
         }
 
         return this.getCheckinDetails(checkin.id);
       },
 
       async getCheckinDetails(checkinId: string) {
-        const checkin = db
+        const [checkin] = await db
           .select()
           .from(checkins)
-          .where(and(eq(checkins.id, checkinId), eq(checkins.coupleId, coupleId)))
-          .get();
+          .where(and(eq(checkins.id, checkinId), eq(checkins.coupleId, coupleId)));
 
         if (!checkin) return null;
 
-        const answers = db
+        const answers = await db
           .select({
             id: checkinAnswers.id,
             userId: checkinAnswers.userId,
@@ -460,8 +446,7 @@ export function createCoupleDal(context: DalContext) {
               eq(checkinAnswers.checkinId, checkinId),
               eq(checkinAnswers.coupleId, coupleId)
             )
-          )
-          .all();
+          );
 
         const myAnswer = answers.find((a) => a.userId === userId) || null;
         const partnerAnswer = answers.find((a) => a.userId !== userId) || null;
@@ -484,15 +469,14 @@ export function createCoupleDal(context: DalContext) {
         checkinId: string,
         data: { mood: number; answerOne: string; answerTwo: string }
       ) {
-        const checkin = db
+        const [checkin] = await db
           .select()
           .from(checkins)
-          .where(and(eq(checkins.id, checkinId), eq(checkins.coupleId, coupleId)))
-          .get();
+          .where(and(eq(checkins.id, checkinId), eq(checkins.coupleId, coupleId)));
 
         if (!checkin) throw new UnauthorizedCoupleAccessError('Check-in not found.');
 
-        const existingAnswer = db
+        const [existingAnswer] = await db
           .select()
           .from(checkinAnswers)
           .where(
@@ -501,22 +485,20 @@ export function createCoupleDal(context: DalContext) {
               eq(checkinAnswers.userId, userId),
               eq(checkinAnswers.coupleId, coupleId)
             )
-          )
-          .get();
+          );
 
         const now = new Date();
         if (existingAnswer) {
-          db.update(checkinAnswers)
+          await db.update(checkinAnswers)
             .set({
               mood: data.mood,
               answerOne: data.answerOne,
               answerTwo: data.answerTwo,
               submittedAt: now,
             })
-            .where(eq(checkinAnswers.id, existingAnswer.id))
-            .run();
+            .where(eq(checkinAnswers.id, existingAnswer.id));
         } else {
-          db.insert(checkinAnswers)
+          await db.insert(checkinAnswers)
             .values({
               id: crypto.randomUUID(),
               checkinId,
@@ -526,12 +508,11 @@ export function createCoupleDal(context: DalContext) {
               answerOne: data.answerOne,
               answerTwo: data.answerTwo,
               submittedAt: now,
-            })
-            .run();
+            });
         }
 
         // Check if both partners have now submitted
-        const allAnswers = db
+        const allAnswers = await db
           .select()
           .from(checkinAnswers)
           .where(
@@ -539,16 +520,14 @@ export function createCoupleDal(context: DalContext) {
               eq(checkinAnswers.checkinId, checkinId),
               eq(checkinAnswers.coupleId, coupleId)
             )
-          )
-          .all();
+          );
 
         // Exactly 2 partners in a couple
         let revealedNow = false;
         if (allAnswers.length >= 2 && checkin.status !== 'revealed') {
-          db.update(checkins)
+          await db.update(checkins)
             .set({ status: 'revealed', revealedAt: now })
-            .where(eq(checkins.id, checkinId))
-            .run();
+            .where(eq(checkins.id, checkinId));
           revealedNow = true;
         }
 
@@ -556,7 +535,7 @@ export function createCoupleDal(context: DalContext) {
       },
 
       async getHistory() {
-        const rows = db
+        const rows = await db
           .select()
           .from(checkins)
           .where(
@@ -565,8 +544,7 @@ export function createCoupleDal(context: DalContext) {
               eq(checkins.status, 'revealed')
             )
           )
-          .orderBy(desc(checkins.year), desc(checkins.weekNumber))
-          .all();
+          .orderBy(desc(checkins.year), desc(checkins.weekNumber));
 
         return Promise.all(rows.map((r) => this.getCheckinDetails(r.id)));
       },
@@ -590,16 +568,15 @@ export function createCoupleDal(context: DalContext) {
           .from(memories)
           .innerJoin(users, eq(users.id, memories.createdByUserId))
           .where(eq(memories.coupleId, coupleId))
-          .orderBy(desc(memories.memoryDate), desc(memories.createdAt))
-          .all();
+          .orderBy(desc(memories.memoryDate), desc(memories.createdAt));
       },
 
       async getById(id: string) {
-        return db
+        const [row] = await db
           .select()
           .from(memories)
-          .where(and(eq(memories.id, id), eq(memories.coupleId, coupleId)))
-          .get() ?? null;
+          .where(and(eq(memories.id, id), eq(memories.coupleId, coupleId)));
+        return row ?? null;
       },
 
       async create(data: {
@@ -611,7 +588,7 @@ export function createCoupleDal(context: DalContext) {
         const id = crypto.randomUUID();
         const now = new Date();
 
-        return db
+        const [row] = await db
           .insert(memories)
           .values({
             id,
@@ -624,18 +601,17 @@ export function createCoupleDal(context: DalContext) {
             createdAt: now,
             updatedAt: now,
           })
-          .returning()
-          .get();
+          .returning();
+        return row;
       },
 
       async delete(id: string) {
         const item = await this.getById(id);
         if (!item) throw new UnauthorizedCoupleAccessError('Memory not found or access denied.');
 
-        return db
+        await db
           .delete(memories)
-          .where(and(eq(memories.id, id), eq(memories.coupleId, coupleId)))
-          .run();
+          .where(and(eq(memories.id, id), eq(memories.coupleId, coupleId)));
       },
     },
 
@@ -656,8 +632,7 @@ export function createCoupleDal(context: DalContext) {
           .from(preferences)
           .innerJoin(users, eq(users.id, preferences.userId))
           .where(eq(preferences.coupleId, coupleId))
-          .orderBy(preferences.category, preferences.title)
-          .all();
+          .orderBy(preferences.category, preferences.title);
       },
 
       async upsert(data: {
@@ -669,7 +644,7 @@ export function createCoupleDal(context: DalContext) {
         const now = new Date();
 
         if (data.id) {
-          const existing = db
+          const [existing] = await db
             .select()
             .from(preferences)
             .where(
@@ -678,14 +653,13 @@ export function createCoupleDal(context: DalContext) {
                 eq(preferences.coupleId, coupleId),
                 eq(preferences.userId, userId)
               )
-            )
-            .get();
+            );
 
           if (!existing) {
             throw new UnauthorizedCoupleAccessError('Cannot update preference not owned by you.');
           }
 
-          return db
+          const [row] = await db
             .update(preferences)
             .set({
               category: data.category,
@@ -694,12 +668,12 @@ export function createCoupleDal(context: DalContext) {
               updatedAt: now,
             })
             .where(eq(preferences.id, data.id))
-            .returning()
-            .get();
+            .returning();
+          return row;
         }
 
         const id = crypto.randomUUID();
-        return db
+        const [row] = await db
           .insert(preferences)
           .values({
             id,
@@ -710,12 +684,12 @@ export function createCoupleDal(context: DalContext) {
             content: data.content,
             updatedAt: now,
           })
-          .returning()
-          .get();
+          .returning();
+        return row;
       },
 
       async delete(id: string) {
-        const existing = db
+        const [existing] = await db
           .select()
           .from(preferences)
           .where(
@@ -724,33 +698,30 @@ export function createCoupleDal(context: DalContext) {
               eq(preferences.coupleId, coupleId),
               eq(preferences.userId, userId)
             )
-          )
-          .get();
+          );
 
         if (!existing) {
           throw new UnauthorizedCoupleAccessError('Preference not found or not owned by you.');
         }
 
-        return db.delete(preferences).where(eq(preferences.id, id)).run();
+        await db.delete(preferences).where(eq(preferences.id, id));
       },
     },
 
     // ==================== LOVE NOTES & CAPSULES ====================
     loveNotes: {
       async getAll() {
-        const notes = db
+        const notes = await db
           .select()
           .from(loveNotes)
           .where(eq(loveNotes.coupleId, coupleId))
-          .orderBy(desc(loveNotes.createdAt))
-          .all();
+          .orderBy(desc(loveNotes.createdAt));
 
-        const replies = db
+        const replies = await db
           .select()
           .from(loveNoteReplies)
           .where(eq(loveNoteReplies.coupleId, coupleId))
-          .orderBy(asc(loveNoteReplies.createdAt))
-          .all();
+          .orderBy(asc(loveNoteReplies.createdAt));
 
         return notes.map((note) => ({
           ...note,
@@ -769,10 +740,10 @@ export function createCoupleDal(context: DalContext) {
         signOff?: string;
         paperStyle?: string;
       }) {
-        const userRecord = db.select().from(users).where(eq(users.id, userId)).get();
+        const [userRecord] = await db.select().from(users).where(eq(users.id, userId));
         const id = crypto.randomUUID();
 
-        const inserted = db
+        const [inserted] = await db
           .insert(loveNotes)
           .values({
             id,
@@ -787,48 +758,44 @@ export function createCoupleDal(context: DalContext) {
             createdAt: new Date(),
             updatedAt: new Date(),
           })
-          .returning()
-          .get();
+          .returning();
 
         return { ...inserted, replies: [] };
       },
 
       async tap(noteId: string) {
-        const note = db
+        const [note] = await db
           .select()
           .from(loveNotes)
-          .where(and(eq(loveNotes.id, noteId), eq(loveNotes.coupleId, coupleId)))
-          .get();
+          .where(and(eq(loveNotes.id, noteId), eq(loveNotes.coupleId, coupleId)));
 
         if (!note) {
           throw new UnauthorizedCoupleAccessError('Love note not found in this space.');
         }
 
-        const updated = db
+        const [updated] = await db
           .update(loveNotes)
           .set({ tapsCount: note.tapsCount + 1, updatedAt: new Date() })
           .where(eq(loveNotes.id, noteId))
-          .returning()
-          .get();
+          .returning();
 
         return updated;
       },
 
       async addReply(data: { noteId: string; content: string }) {
-        const userRecord = db.select().from(users).where(eq(users.id, userId)).get();
+        const [userRecord] = await db.select().from(users).where(eq(users.id, userId));
         const id = crypto.randomUUID();
 
-        const note = db
+        const [note] = await db
           .select()
           .from(loveNotes)
-          .where(and(eq(loveNotes.id, data.noteId), eq(loveNotes.coupleId, coupleId)))
-          .get();
+          .where(and(eq(loveNotes.id, data.noteId), eq(loveNotes.coupleId, coupleId)));
 
         if (!note) {
           throw new UnauthorizedCoupleAccessError('Love note not found in this space.');
         }
 
-        const reply = db
+        const [reply] = await db
           .insert(loveNoteReplies)
           .values({
             id,
@@ -839,42 +806,40 @@ export function createCoupleDal(context: DalContext) {
             content: data.content,
             createdAt: new Date(),
           })
-          .returning()
-          .get();
+          .returning();
 
         return reply;
       },
 
       async delete(noteId: string) {
-        const note = db
+        const [note] = await db
           .select()
           .from(loveNotes)
-          .where(and(eq(loveNotes.id, noteId), eq(loveNotes.coupleId, coupleId)))
-          .get();
+          .where(and(eq(loveNotes.id, noteId), eq(loveNotes.coupleId, coupleId)));
 
         if (!note) {
           throw new UnauthorizedCoupleAccessError('Love note not found in this space.');
         }
 
-        return db.delete(loveNotes).where(eq(loveNotes.id, noteId)).run();
+        await db.delete(loveNotes).where(eq(loveNotes.id, noteId));
       },
     },
 
     // ==================== DAILY PROMPTS FOR TWO ====================
     dailyPrompts: {
       async getLatest() {
-        let latest = db
+        let [latest] = await db
           .select()
           .from(dailyPrompts)
           .where(eq(dailyPrompts.coupleId, coupleId))
           .orderBy(desc(dailyPrompts.createdAt))
-          .get();
+          .limit(1);
 
         // If no prompt exists yet, seed an initial romantic prompt
         if (!latest) {
-          const userRecord = db.select().from(users).where(eq(users.id, userId)).get();
+          const [userRecord] = await db.select().from(users).where(eq(users.id, userId));
           const id = crypto.randomUUID();
-          latest = db
+          [latest] = await db
             .insert(dailyPrompts)
             .values({
               id,
@@ -885,29 +850,27 @@ export function createCoupleDal(context: DalContext) {
               dayNumber: 312,
               createdAt: new Date(),
             })
-            .returning()
-            .get();
+            .returning();
         }
 
-        const answers = db
+        const answers = await db
           .select()
           .from(dailyPromptAnswers)
           .where(and(eq(dailyPromptAnswers.promptId, latest.id), eq(dailyPromptAnswers.coupleId, coupleId)))
-          .orderBy(asc(dailyPromptAnswers.createdAt))
-          .all();
+          .orderBy(asc(dailyPromptAnswers.createdAt));
 
         return { ...latest, answers };
       },
 
       async create(promptText: string) {
         const id = crypto.randomUUID();
-        const currentCount = db
+        const currentPrompts = await db
           .select()
           .from(dailyPrompts)
-          .where(eq(dailyPrompts.coupleId, coupleId))
-          .all().length;
+          .where(eq(dailyPrompts.coupleId, coupleId));
+        const currentCount = currentPrompts.length;
 
-        const inserted = db
+        const [inserted] = await db
           .insert(dailyPrompts)
           .values({
             id,
@@ -917,15 +880,14 @@ export function createCoupleDal(context: DalContext) {
             dayNumber: 312 + currentCount,
             createdAt: new Date(),
           })
-          .returning()
-          .get();
+          .returning();
 
         return { ...inserted, answers: [] };
       },
 
       async answer(data: { promptId: string; answer: string }) {
-        const userRecord = db.select().from(users).where(eq(users.id, userId)).get();
-        const existing = db
+        const [userRecord] = await db.select().from(users).where(eq(users.id, userId));
+        const [existing] = await db
           .select()
           .from(dailyPromptAnswers)
           .where(
@@ -933,20 +895,19 @@ export function createCoupleDal(context: DalContext) {
               eq(dailyPromptAnswers.promptId, data.promptId),
               eq(dailyPromptAnswers.userId, userId)
             )
-          )
-          .get();
+          );
 
         if (existing) {
-          return db
+          const [updated] = await db
             .update(dailyPromptAnswers)
             .set({ answer: data.answer, createdAt: new Date() })
             .where(eq(dailyPromptAnswers.id, existing.id))
-            .returning()
-            .get();
+            .returning();
+          return updated;
         }
 
         const id = crypto.randomUUID();
-        return db
+        const [row] = await db
           .insert(dailyPromptAnswers)
           .values({
             id,
@@ -957,8 +918,8 @@ export function createCoupleDal(context: DalContext) {
             answer: data.answer,
             createdAt: new Date(),
           })
-          .returning()
-          .get();
+          .returning();
+        return row;
       },
     },
 
@@ -968,19 +929,17 @@ export function createCoupleDal(context: DalContext) {
         return db
           .select()
           .from(partnerMoods)
-          .where(eq(partnerMoods.coupleId, coupleId))
-          .all();
+          .where(eq(partnerMoods.coupleId, coupleId));
       },
 
       async update(data: { emoji: string; label: string; note?: string }) {
-        const existing = db
+        const [existing] = await db
           .select()
           .from(partnerMoods)
-          .where(and(eq(partnerMoods.coupleId, coupleId), eq(partnerMoods.userId, userId)))
-          .get();
+          .where(and(eq(partnerMoods.coupleId, coupleId), eq(partnerMoods.userId, userId)));
 
         if (existing) {
-          return db
+          const [updated] = await db
             .update(partnerMoods)
             .set({
               emoji: data.emoji,
@@ -989,12 +948,12 @@ export function createCoupleDal(context: DalContext) {
               updatedAt: new Date(),
             })
             .where(eq(partnerMoods.id, existing.id))
-            .returning()
-            .get();
+            .returning();
+          return updated;
         }
 
         const id = crypto.randomUUID();
-        return db
+        const [row] = await db
           .insert(partnerMoods)
           .values({
             id,
@@ -1005,8 +964,8 @@ export function createCoupleDal(context: DalContext) {
             note: data.note || null,
             updatedAt: new Date(),
           })
-          .returning()
-          .get();
+          .returning();
+        return row;
       },
     },
   };

@@ -25,11 +25,10 @@ export async function checkLoginRateLimit(
   const key = `${normalizedEmail}:${ip}`;
   const now = new Date();
 
-  const record = db
+  const [record] = await db
     .select()
     .from(loginAttempts)
-    .where(eq(loginAttempts.key, key))
-    .get();
+    .where(eq(loginAttempts.key, key));
 
   if (!record) {
     return {
@@ -54,14 +53,13 @@ export async function checkLoginRateLimit(
   // If previous lock expired or last attempt was older than lockout window, reset count
   const timeSinceLastAttempt = now.getTime() - record.lastAttemptAt.getTime();
   if (timeSinceLastAttempt > LOCKOUT_MS) {
-    db.update(loginAttempts)
+    await db.update(loginAttempts)
       .set({
         attemptCount: 0,
         lockedUntil: null,
         lastAttemptAt: now,
       })
-      .where(eq(loginAttempts.key, key))
-      .run();
+      .where(eq(loginAttempts.key, key));
 
     return {
       allowed: true,
@@ -87,11 +85,10 @@ export async function recordFailedLoginAttempt(
   const key = `${normalizedEmail}:${ip}`;
   const now = new Date();
 
-  const record = db
+  const [record] = await db
     .select()
     .from(loginAttempts)
-    .where(eq(loginAttempts.key, key))
-    .get();
+    .where(eq(loginAttempts.key, key));
 
   let newCount = 1;
   let lockedUntil: Date | null = null;
@@ -108,24 +105,22 @@ export async function recordFailedLoginAttempt(
       lockedUntil = new Date(now.getTime() + LOCKOUT_MS);
     }
 
-    db.update(loginAttempts)
+    await db.update(loginAttempts)
       .set({
         attemptCount: newCount,
         lastAttemptAt: now,
         lockedUntil,
       })
-      .where(eq(loginAttempts.key, key))
-      .run();
+      .where(eq(loginAttempts.key, key));
   } else {
-    db.insert(loginAttempts)
+    await db.insert(loginAttempts)
       .values({
         id: crypto.randomUUID(),
         key,
         attemptCount: 1,
         lastAttemptAt: now,
         lockedUntil: null,
-      })
-      .run();
+      });
   }
 
   const remaining = Math.max(0, MAX_ATTEMPTS - newCount);
@@ -151,5 +146,5 @@ export async function resetLoginRateLimit(
   const normalizedEmail = email.trim().toLowerCase();
   const key = `${normalizedEmail}:${ip}`;
 
-  db.delete(loginAttempts).where(eq(loginAttempts.key, key)).run();
+  await db.delete(loginAttempts).where(eq(loginAttempts.key, key));
 }

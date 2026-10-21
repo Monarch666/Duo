@@ -45,7 +45,7 @@ export function generateSessionToken(): string {
 }
 
 /**
- * Create a new session in SQLite and store it.
+ * Create a new session in PostgreSQL and store it.
  */
 export async function createSession(
   userId: string,
@@ -56,7 +56,7 @@ export async function createSession(
   const sessionId = crypto.randomUUID();
   const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
 
-  db.insert(sessions)
+  await db.insert(sessions)
     .values({
       id: sessionId,
       userId,
@@ -65,8 +65,7 @@ export async function createSession(
       userAgent: userAgent || null,
       ipAddress: ipAddress || null,
       lastActiveAt: new Date(),
-    })
-    .run();
+    });
 
   return { token, expiresAt };
 }
@@ -94,17 +93,17 @@ export async function clearSessionCookie() {
 }
 
 /**
- * Invalidate a session by token in SQLite.
+ * Invalidate a session by token in PostgreSQL.
  */
 export async function invalidateSession(token: string) {
-  db.delete(sessions).where(eq(sessions.token, token)).run();
+  await db.delete(sessions).where(eq(sessions.token, token));
 }
 
 /**
  * Invalidate all sessions for a specific user (e.g. password reset / logout all).
  */
 export async function invalidateAllUserSessions(userId: string) {
-  db.delete(sessions).where(eq(sessions.userId, userId)).run();
+  await db.delete(sessions).where(eq(sessions.userId, userId));
 }
 
 /**
@@ -114,11 +113,10 @@ export async function validateSessionToken(token: string): Promise<AuthContext |
   const now = new Date();
 
   // Find session
-  const sessionRecord = db
+  const [sessionRecord] = await db
     .select()
     .from(sessions)
-    .where(eq(sessions.token, token))
-    .get();
+    .where(eq(sessions.token, token));
 
   if (!sessionRecord) {
     return null;
@@ -126,20 +124,19 @@ export async function validateSessionToken(token: string): Promise<AuthContext |
 
   // Check expiration
   if (sessionRecord.expiresAt < now) {
-    db.delete(sessions).where(eq(sessions.id, sessionRecord.id)).run();
+    await db.delete(sessions).where(eq(sessions.id, sessionRecord.id));
     return null;
   }
 
   // Update lastActiveAt if more than 5 minutes old
   if (now.getTime() - sessionRecord.lastActiveAt.getTime() > 5 * 60 * 1000) {
-    db.update(sessions)
+    await db.update(sessions)
       .set({ lastActiveAt: now })
-      .where(eq(sessions.id, sessionRecord.id))
-      .run();
+      .where(eq(sessions.id, sessionRecord.id));
   }
 
   // Find user
-  const userRecord = db
+  const [userRecord] = await db
     .select({
       id: users.id,
       email: users.email,
@@ -148,15 +145,14 @@ export async function validateSessionToken(token: string): Promise<AuthContext |
       createdAt: users.createdAt,
     })
     .from(users)
-    .where(eq(users.id, sessionRecord.userId))
-    .get();
+    .where(eq(users.id, sessionRecord.userId));
 
   if (!userRecord) {
     return null;
   }
 
   // Find couple membership for this user
-  const membership = db
+  const [membership] = await db
     .select({
       coupleId: coupleMembers.coupleId,
       role: coupleMembers.role,
@@ -167,14 +163,13 @@ export async function validateSessionToken(token: string): Promise<AuthContext |
     })
     .from(coupleMembers)
     .innerJoin(couples, eq(couples.id, coupleMembers.coupleId))
-    .where(eq(coupleMembers.userId, userRecord.id))
-    .get();
+    .where(eq(coupleMembers.userId, userRecord.id));
 
   let coupleContext: CoupleContext | null = null;
 
   if (membership) {
     // Find partner (if any)
-    const partnerRecord = db
+    const [partnerRecord] = await db
       .select({
         id: users.id,
         displayName: users.displayName,
@@ -188,8 +183,7 @@ export async function validateSessionToken(token: string): Promise<AuthContext |
           eq(coupleMembers.coupleId, membership.coupleId),
           sql`${coupleMembers.userId} != ${userRecord.id}`
         )
-      )
-      .get();
+      );
 
     coupleContext = {
       coupleId: membership.coupleId,
