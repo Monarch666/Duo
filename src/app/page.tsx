@@ -1,6 +1,7 @@
 import { getCurrentAuth } from '@/lib/auth/session';
 import { createCoupleDal } from '@/lib/dal';
 import { redirect } from 'next/navigation';
+import { getISOWeekAndYear } from '@/lib/utils/date';
 import DashboardClient from './DashboardClient';
 
 export default async function HomePage() {
@@ -19,6 +20,8 @@ export default async function HomePage() {
     coupleId: auth.couple.coupleId,
   });
 
+  const { year: currentYear, weekNumber: currentWeek } = getISOWeekAndYear();
+
   const [
     coupleInfo,
     events,
@@ -33,7 +36,7 @@ export default async function HomePage() {
     dal.couple.getDetails(),
     dal.events.getAll(),
     dal.lists.getAll(),
-    dal.checkins.getOrCreateWeek(2026, 42, {
+    dal.checkins.getOrCreateWeek(currentYear, currentWeek, {
       promptOne: 'What was your favorite moment together this week?',
       promptTwo: 'What is one thing I can do to make you feel extra loved next week?',
     }),

@@ -22,13 +22,21 @@ function getConnectionString(): string {
       // Ignore if loadEnvFile fails
     }
   }
-  const url = process.env.DATABASE_URL;
+  let url = process.env.DATABASE_URL;
   if (!url) {
     throw new Error(
       'DATABASE_URL environment variable is required. ' +
       'Set it to your Supabase PostgreSQL connection string.'
     );
   }
+
+  // Next.js dotenv-expand may treat $agiyoichi1602 as an environment variable and replace it with ""
+  if (url.includes(':I@')) {
+    url = url.replace(':I@', ':I$agiyoichi1602@');
+  } else if (url.includes(':I\\$agiyoichi1602@')) {
+    url = url.replace(':I\\$agiyoichi1602@', ':I$agiyoichi1602@');
+  }
+
   return url;
 }
 

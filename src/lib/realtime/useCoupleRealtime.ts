@@ -2,20 +2,42 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { CoupleRealtimeEvent } from './bus';
+import { createClient, SupabaseClient, RealtimeChannel } from '@supabase/supabase-js';
 
 export type RealtimeStatus = 'connected' | 'connecting' | 'fallback_polling' | 'disconnected';
 
 interface UseCoupleRealtimeOptions {
+  coupleId?: string;
   enabled?: boolean;
   onEvent: (event: CoupleRealtimeEvent) => void;
 }
 
-export function useCoupleRealtime({ enabled = true, onEvent }: UseCoupleRealtimeOptions) {
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+let clientSupabase: SupabaseClient | null = null;
+function getClientSupabase(): SupabaseClient | null {
+  if (typeof window === 'undefined') return null;
+  if (!supabaseUrl || !supabaseAnonKey) return null;
+  if (!clientSupabase) {
+    clientSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: false },
+    });
+  }
+  return clientSupabase;
+}
+
+export function useCoupleRealtime({
+  coupleId,
+  enabled = true,
+  onEvent,
+}: UseCoupleRealtimeOptions) {
   const [status, setStatus] = useState<RealtimeStatus>('connecting');
   const [lastSyncTime, setLastSyncTime] = useState<string>(new Date().toISOString());
   const errorCountRef = useRef(0);
   const eventSourceRef = useRef<EventSource | null>(null);
   const pollingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const supabaseChannelRef = useRef<RealtimeChannel | null>(null);
   const lastSyncTimeRef = useRef(lastSyncTime);
 
   lastSyncTimeRef.current = lastSyncTime;
@@ -76,7 +98,7 @@ export function useCoupleRealtime({ enabled = true, onEvent }: UseCoupleRealtime
       }
     };
 
-    // Connect via SSE
+    // Connect via SSE (Secondary / local dev fallback)
     const connectSSE = () => {
       try {
         const es = new EventSource('/api/realtime/sse');
@@ -124,17 +146,52 @@ export function useCoupleRealtime({ enabled = true, onEvent }: UseCoupleRealtime
       }
     };
 
-    connectSSE();
+    // 1. Try Supabase Realtime Channels first (for distributed multi-region scale)
+    const supabase = getClientSupabase();
+    if (supabase && coupleId) {
+      try {
+        const channel = supabase.channel(`couple:${coupleId}`);
+        supabaseChannelRef.current = channel;
+
+        channel
+          .on('broadcast', { event: '*' }, (message: any) => {
+            if (!isMounted) return;
+            if (message?.payload) {
+              handleEvent(message.payload as CoupleRealtimeEvent);
+            }
+          })
+          .subscribe((subStatus) => {
+            if (!isMounted) return;
+            if (subStatus === 'SUBSCRIBED') {
+              setStatus('connected');
+              stopPollingFallback();
+            } else if (subStatus === 'CHANNEL_ERROR' || subStatus === 'TIMED_OUT') {
+              console.warn('[Realtime] Supabase Channel error, falling back to SSE:', subStatus);
+              connectSSE();
+            }
+          });
+      } catch (err) {
+        console.warn('[Realtime] Failed to initialize Supabase channel, falling back to SSE:', err);
+        connectSSE();
+      }
+    } else {
+      // Direct SSE connection
+      connectSSE();
+    }
 
     return () => {
       isMounted = false;
+      if (supabaseChannelRef.current) {
+        supabaseChannelRef.current.unsubscribe();
+        supabaseChannelRef.current = null;
+      }
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
         eventSourceRef.current = null;
       }
       stopPollingFallback();
     };
-  }, [enabled, handleEvent]);
+  }, [enabled, coupleId, handleEvent]);
 
   return { status, lastSyncTime };
 }

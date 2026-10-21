@@ -161,3 +161,23 @@ export const updatePartnerMoodSchema = z.object({
   label: z.string().trim().min(1).max(50),
   note: z.string().trim().max(200).optional(),
 });
+
+// ==================== ONBOARDING BLUEPRINT VALIDATIONS ====================
+export const onboardingSchema = z.object({
+  anniversaryDate: z.string().optional().or(z.literal('')),
+  meetPlace: z.string().trim().max(160).optional(),
+  loveLanguage: z.string().trim().min(1, 'Please select your primary love language'),
+  comfortFood: z.string().trim().min(1, 'Please share your comfort food or craving').max(200),
+  comfortCheerUp: z.string().trim().max(300).optional(),
+  dreamDates: z.array(z.string().trim()).min(1, 'Please choose or add at least one dream date'),
+  bucketListDream: z.string().trim().min(1, 'Please share a bucket list dream').max(250),
+  nextDateTitle: z.string().trim().max(100).optional(),
+  nextDateStartAt: z.string().optional().or(z.literal('')),
+  nextDateCategory: eventCategoryEnum.default('date_night'),
+  welcomeNote: z.string().trim().max(1000).optional(),
+  welcomeNoteStyle: z.enum(['butter', 'rose', 'sage', 'classic']).default('butter'),
+  welcomeNoteSignOff: z.string().trim().max(60).optional(),
+});
+
+export type OnboardingData = z.infer<typeof onboardingSchema>;
+

@@ -150,9 +150,11 @@ export default function CheckinView({
               <h2 className="text-base sm:text-lg font-serif font-bold text-warmth-900">
                 Weekly Rituals & Check-in
               </h2>
-              <span className="text-[10px] font-mono font-semibold bg-rose-50 text-rosewood-800 border border-rosewood-200 px-2.5 py-0.5 rounded-full">
-                Week {checkin?.weekNumber || 42} • {checkin?.year || 2026}
-              </span>
+              {checkin?.weekNumber && (
+                <span className="text-[10px] font-mono font-semibold bg-rose-50 text-rosewood-800 border border-rosewood-200 px-2.5 py-0.5 rounded-full">
+                  Week {checkin.weekNumber} • {checkin.year}
+                </span>
+              )}
             </div>
             <p className="text-xs text-warmth-600">
               Wax-sealed weekly prompts to pause, reflect, and stay emotionally attuned

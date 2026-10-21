@@ -10,6 +10,7 @@ import { db } from '../src/lib/db';
 import * as schema from '../src/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { hashPassword } from '../src/lib/auth/password';
+import { getISOWeekAndYear } from '../src/lib/utils/date';
 import crypto from 'crypto';
 
 async function seed() {
@@ -217,13 +218,14 @@ async function seed() {
     ]);
 
   // 6. Seed Weekly Check-in (Current Week, Revealed)
+  const { year: currentYear, weekNumber: currentWeek } = getISOWeekAndYear();
   const currentCheckinId = crypto.randomUUID();
   await db.insert(schema.checkins)
     .values({
       id: currentCheckinId,
       coupleId,
-      year: 2026,
-      weekNumber: 42,
+      year: currentYear,
+      weekNumber: currentWeek,
       promptOne: 'What was your favorite moment of us together this week?',
       promptTwo: 'What is one thing I can do to make you feel extra loved next week?',
       status: 'revealed',

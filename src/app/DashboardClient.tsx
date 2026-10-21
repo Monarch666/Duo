@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { logOutAction, unlinkCoupleAction } from '@/lib/actions/auth';
 import {
   Heart,
@@ -407,8 +408,9 @@ export default function DashboardClient({
     }, 4000);
   };
 
-  // Connect to SSE + 5s polling fallback
+  // Connect to Supabase Realtime + SSE + 5s polling fallback
   const { status: syncStatus } = useCoupleRealtime({
+    coupleId: coupleInfo.couple.id,
     enabled: true,
     onEvent: handleRealtimeEvent,
   });
@@ -768,6 +770,15 @@ export default function DashboardClient({
                 </>
               )}
             </button>
+
+            <Link
+              href="/onboarding"
+              title="Personalize Sanctuary with Love Blueprint Q&A"
+              className="py-1.5 px-3 rounded-lg text-rosewood-800 hover:text-rosewood-900 bg-rosewood-50 hover:bg-rosewood-100 transition text-xs font-medium flex items-center gap-1.5 border border-rosewood-200"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-rosewood-700" />
+              <span className="hidden sm:inline">Love Blueprint</span>
+            </Link>
 
             <button
               onClick={() => setShowUnlinkModal(true)}
@@ -1273,7 +1284,7 @@ export default function DashboardClient({
                           Weekly Check-in Vault
                         </h3>
                         <p className="text-[11px] text-warmth-500 font-mono">
-                          Week {checkin?.weekNumber || 42}
+                          {checkin?.weekNumber ? `Week ${checkin.weekNumber}` : 'Current Week'}
                         </p>
                       </div>
                     </div>

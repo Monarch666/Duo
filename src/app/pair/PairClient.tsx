@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   createCoupleAction,
   joinCoupleAction,
@@ -18,6 +19,8 @@ import {
   RefreshCw,
   AlertCircle,
   Users,
+  Sparkles,
+  ArrowRight,
 } from 'lucide-react';
 
 interface PairClientProps {
@@ -83,7 +86,7 @@ export default function PairClient({ userName, currentCouple }: PairClientProps)
     try {
       const res = await joinCoupleAction({ inviteCode: inviteCodeInput.trim() });
       if (res.success) {
-        router.push('/');
+        router.push('/onboarding');
         router.refresh();
       } else {
         setError(res.error || 'Failed to join couple space.');
@@ -173,6 +176,26 @@ export default function PairClient({ userName, currentCouple }: PairClientProps)
                   </>
                 )}
               </button>
+            </div>
+
+            {/* Prepare Sanctuary Callout */}
+            <div className="p-3.5 rounded-xl bg-rosewood-50/70 border border-rosewood-200 text-left space-y-2">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-rosewood-700 shrink-0" />
+                <h3 className="text-xs font-serif font-bold text-rosewood-900">
+                  Prepare Your Shared Sanctuary
+                </h3>
+              </div>
+              <p className="text-[11px] text-warmth-700 leading-relaxed">
+                While you wait for your partner to join, answer 5 quick questions to set up your love language, dream dates, and leave a sealed welcome note.
+              </p>
+              <Link
+                href="/onboarding"
+                className="inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-lg text-xs font-semibold bg-rosewood-700 hover:bg-rosewood-800 text-white transition active:scale-[0.98] shadow-sm"
+              >
+                <span>Fill Out Love Blueprint (Q&A)</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
 
             <div className="flex items-center justify-center gap-1.5 text-xs text-warmth-500 pt-1">

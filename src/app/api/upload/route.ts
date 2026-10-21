@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentAuth } from '@/lib/auth/session';
+import { uploadToSupabaseStorage } from '@/lib/storage/supabase';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
@@ -42,21 +43,40 @@ export async function POST(req: NextRequest) {
     const safeExt = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext) ? ext : 'jpg';
     const filename = `${crypto.randomUUID()}.${safeExt}`;
 
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // 1. Attempt Supabase Cloud Storage for multi-region CDN delivery
+    const cloudUpload = await uploadToSupabaseStorage(
+      auth.couple.coupleId,
+      filename,
+      buffer,
+      file.type
+    );
+
+    if (cloudUpload) {
+      return NextResponse.json({
+        success: true,
+        filename,
+        url: cloudUpload.url,
+        storage: 'supabase',
+      });
+    }
+
+    // 2. Fallback to local storage (for offline or local dev without storage buckets)
     const uploadsDir = path.join(process.cwd(), 'data', 'uploads');
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
     }
 
     const filePath = path.join(uploadsDir, filename);
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
     await fs.promises.writeFile(filePath, buffer);
 
     return NextResponse.json({
       success: true,
       filename,
       url: `/api/uploads/${filename}`,
+      storage: 'local',
     });
   } catch (err: any) {
     return NextResponse.json(

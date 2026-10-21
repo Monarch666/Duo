@@ -49,9 +49,28 @@ export function getRecentEventsStore(): Map<string, CoupleRealtimeEvent[]> {
   return global.__duoRecentEvents;
 }
 
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+let supabaseServerClient: SupabaseClient | null = null;
+function getSupabaseRealtimeServer(): SupabaseClient | null {
+  if (!supabaseUrl || !supabaseKey) return null;
+  if (!supabaseServerClient) {
+    supabaseServerClient = createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false },
+    });
+  }
+  return supabaseServerClient;
+}
+
 /**
  * Broadcast an event to all connected partners in a couple space.
- * Also caches the event in memory for the 5-second polling fallback!
+ * 1. Emits to active SSE stream listeners
+ * 2. Caches the event in memory for the 5-second polling fallback
+ * 3. Broadcasts through Supabase Realtime Channels for distributed/multi-region scale
  */
 export function broadcastToCouple(
   coupleId: string,
@@ -76,7 +95,31 @@ export function broadcastToCouple(
     current.shift();
   }
   store.set(coupleId, current);
+
+  // 3. Broadcast to Supabase Realtime Channel (distributed multi-region edge)
+  const supabase = getSupabaseRealtimeServer();
+  if (supabase) {
+    try {
+      const channel = supabase.channel(`couple:${coupleId}`);
+      channel
+        .send({
+          type: 'broadcast',
+          event: fullEvent.type,
+          payload: fullEvent,
+        })
+        .catch((err) => {
+          console.warn('[Supabase Realtime Broadcast]', err?.message || err);
+        });
+    } catch (err: any) {
+      console.warn('[Supabase Realtime Channel]', err?.message || err);
+    }
+  }
 }
+
+/**
+ * AGENTS.md canonical alias for broadcastToCouple
+ */
+export const publishCoupleEvent = broadcastToCouple;
 
 /**
  * Get recent events for a couple space since a given ISO timestamp (for 5s polling fallback).
