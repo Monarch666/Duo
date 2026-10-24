@@ -13,7 +13,7 @@ const serverUrl = process.env.CAPACITOR_SERVER_URL || 'http://10.136.63.122:3000
 const config: CapacitorConfig = {
   appId: 'com.duo.sanctuary',
   appName: 'Duo',
-  webDir: 'public',
+  webDir: 'mobile-shell',
   server: {
     url: serverUrl,
     cleartext: true, // Enables local HTTP during local network development
