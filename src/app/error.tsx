@@ -5,13 +5,25 @@ import { useEffect } from 'react';
 export default function ErrorBoundary({
   error,
   reset,
+  retry,
 }: {
-  error: Error & { digest?: string };
-  reset: () => void;
+  error: unknown;
+  reset?: () => void;
+  retry?: () => void;
 }) {
   useEffect(() => {
     console.error('Sanctuary error:', error);
   }, [error]);
+
+  const handleRecover = () => {
+    if (typeof retry === 'function') {
+      retry();
+    } else if (typeof reset === 'function') {
+      reset();
+    } else {
+      window.location.reload();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FAF6EF] text-[#2C221E] flex items-center justify-center p-6 font-sans">
@@ -27,7 +39,7 @@ export default function ErrorBoundary({
         </p>
         <div className="pt-2">
           <button
-            onClick={() => reset()}
+            onClick={handleRecover}
             type="button"
             className="px-5 py-2.5 bg-[#8E4A49] text-white rounded-xl text-sm font-medium hover:bg-[#783E3D] transition-colors shadow-sm"
           >
