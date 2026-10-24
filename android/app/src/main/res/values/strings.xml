@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Duo</string>
+    <string name="title_activity_main">Duo</string>
+    <string name="package_name">com.duo.sanctuary</string>
+    <string name="custom_url_scheme">com.duo.sanctuary</string>
+</resources>

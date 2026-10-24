@@ -33,3 +33,8 @@ next-env.d.ts
 /data/uploads/*
 !/data/uploads/.gitkeep
 /backups
+.idea/
+.gradle/
+.android/
+*.apk
+

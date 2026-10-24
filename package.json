@@ -11,9 +11,14 @@
     "test:watch": "vitest",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx scripts/seed.ts",
-    "backup": "tsx scripts/backup.ts"
+    "backup": "tsx scripts/backup.ts",
+    "cap:sync": "cap sync",
+    "cap:open": "cap open android",
+    "apk:build": "cmd /c \"cd android && gradlew.bat assembleDebug\""
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
     "@node-rs/argon2": "^2.2.2",
     "@supabase/supabase-js": "^2.118.0",
     "archiver": "^8.0.0",
@@ -28,6 +33,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
     "@netlify/plugin-nextjs": "^5.16.4",
     "@types/archiver": "^8.0.0",
     "@types/node": "^26.6.5",
@@ -40,5 +46,9 @@
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^5.0.5"
+  },
+  "overrides": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   }
 }

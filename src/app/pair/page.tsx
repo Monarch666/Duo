@@ -2,6 +2,8 @@ import { getCurrentAuth } from '@/lib/auth/session';
 import { redirect } from 'next/navigation';
 import PairClient from './PairClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function PairPage() {
   const auth = await getCurrentAuth();
 

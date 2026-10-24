@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation';
 import { getISOWeekAndYear } from '@/lib/utils/date';
 import DashboardClient from './DashboardClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   const auth = await getCurrentAuth();
 

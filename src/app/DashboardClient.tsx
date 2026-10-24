@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+
 import Link from 'next/link';
 import { logOutAction, unlinkCoupleAction } from '@/lib/actions/auth';
 import {
@@ -108,6 +109,36 @@ export default function DashboardClient({
   const [activeTab, setActiveTab] = useState<
     'overview' | 'calendar' | 'lists' | 'checkin' | 'memories' | 'preferences'
   >('overview');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (
+        tabParam &&
+        ['overview', 'calendar', 'lists', 'checkin', 'memories', 'preferences'].includes(tabParam)
+      ) {
+        setActiveTab(tabParam as any);
+      }
+    }
+  }, []);
+
+  const handleTabChange = useCallback(
+    (newTab: 'overview' | 'calendar' | 'lists' | 'checkin' | 'memories' | 'preferences') => {
+      setActiveTab(newTab);
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        if (newTab === 'overview') {
+          url.searchParams.delete('tab');
+        } else {
+          url.searchParams.set('tab', newTab);
+        }
+        window.history.replaceState({}, '', url.toString());
+      }
+    },
+    []
+  );
+
 
   const [events, setEvents] = useState(initialEvents);
   const [lists, setLists] = useState(initialLists);
@@ -813,7 +844,9 @@ export default function DashboardClient({
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                type="button"
+                id={`tab-nav-${tab.id}`}
+                onClick={() => handleTabChange(tab.id as any)}
                 className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
                   isActive
                     ? 'bg-rosewood-700 text-white shadow-sm font-semibold'
@@ -1203,7 +1236,7 @@ export default function DashboardClient({
               <div className="lg:col-span-5 space-y-6">
                 {/* NEXT DATE POSTCARD (Postage stamp aesthetic) */}
                 <div
-                  onClick={() => setActiveTab('calendar')}
+                  onClick={() => handleTabChange('calendar')}
                   className="cursor-pointer bg-white rounded-2xl border border-warmth-200 shadow-sm p-5 hover:border-warmth-400 transition group relative overflow-hidden"
                 >
                   <div className="flex items-center justify-between mb-3">
@@ -1258,7 +1291,7 @@ export default function DashboardClient({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setActiveTab('calendar');
+                          handleTabChange('calendar');
                         }}
                         className="mt-2 text-xs font-semibold text-rosewood-700 underline"
                       >
@@ -1270,7 +1303,7 @@ export default function DashboardClient({
 
                 {/* WEEKLY RITUALS & CHECK-IN VAULT (Wax Seal Emblem) */}
                 <div
-                  onClick={() => setActiveTab('checkin')}
+                  onClick={() => handleTabChange('checkin')}
                   className="cursor-pointer bg-white rounded-2xl border border-warmth-200 shadow-sm p-5 hover:border-warmth-400 transition group"
                 >
                   <div className="flex items-center justify-between mb-3">
@@ -1329,7 +1362,7 @@ export default function DashboardClient({
                       </h3>
                     </div>
                     <button
-                      onClick={() => setActiveTab('lists')}
+                      onClick={() => handleTabChange('lists')}
                       className="text-xs font-medium text-rosewood-700 hover:underline"
                     >
                       View all ({uniqueLists.length})
@@ -1341,7 +1374,7 @@ export default function DashboardClient({
                       {uniqueLists.slice(0, 3).map((list) => (
                         <div
                           key={list.id}
-                          onClick={() => setActiveTab('lists')}
+                          onClick={() => handleTabChange('lists')}
                           className="p-3 rounded-xl border border-warmth-200 bg-warmth-50/60 hover:bg-warmth-100/70 cursor-pointer transition flex items-center justify-between"
                         >
                           <div className="flex items-center gap-2 min-w-0">
@@ -1363,7 +1396,7 @@ export default function DashboardClient({
 
                 {/* POLAROID MEMORY KEEPSAKE */}
                 <div
-                  onClick={() => setActiveTab('memories')}
+                  onClick={() => handleTabChange('memories')}
                   className="cursor-pointer bg-white rounded-2xl border border-warmth-200 shadow-sm p-5 hover:border-warmth-400 transition group"
                 >
                   <div className="flex items-center justify-between mb-3">
