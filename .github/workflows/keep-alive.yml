@@ -1,0 +1,22 @@
+name: Keep Duo Sanctuary Awake
+
+on:
+  schedule:
+    # Runs every 14 minutes (Render free tier sleeps after 15 minutes of inactivity)
+    - cron: '*/14 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  ping-sanctuary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Production Server
+        run: |
+          echo "Pinging Duo Sanctuary at https://duo-16pf.onrender.com/login ..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 25 https://duo-16pf.onrender.com/login || echo "000")
+          echo "Response code: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 400 ]; then
+            echo "🌸 Sanctuary is warm and awake!"
+          else
+            echo "⚠️ Server woke up or responded with status: $HTTP_STATUS"
+          fi
