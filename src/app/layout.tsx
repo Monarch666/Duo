@@ -17,6 +17,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: 'cover',
 };
 
 export const dynamic = 'force-dynamic';
@@ -27,8 +28,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="antialiased selection:bg-rosewood-200 selection:text-rosewood-900 bg-warmth-100 text-warmth-900 min-h-screen">
+    <html lang="en" className="overflow-x-hidden w-full max-w-full">
+      <body className="antialiased selection:bg-rosewood-200 selection:text-rosewood-900 bg-warmth-100 text-warmth-900 min-h-screen overflow-x-hidden w-full max-w-full m-0 p-0 relative">
         {children}
       </body>
     </html>

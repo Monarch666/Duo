@@ -43,6 +43,7 @@ import CheckinView from '@/components/checkin/CheckinView';
 import MemoriesView from '@/components/memories/MemoriesView';
 import PreferencesView from '@/components/preferences/PreferencesView';
 import CycleTrackerView from '@/components/cycle/CycleTrackerView';
+import CoupleKeyModal from '@/components/couple/CoupleKeyModal';
 import LoveNoteComposerModal from '@/components/notes/LoveNoteComposerModal';
 import DailyPromptModal from '@/components/prompts/DailyPromptModal';
 import { calculateCycleInfo } from '@/lib/utils/cycle';
@@ -215,6 +216,7 @@ export default function DashboardClient({
   }, [preferences]);
 
   const [showUnlinkModal, setShowUnlinkModal] = useState(false);
+  const [showCoupleKeyModal, setShowCoupleKeyModal] = useState(false);
   const [unlinking, setUnlinking] = useState(false);
   const [realtimeNotification, setRealtimeNotification] = useState<string | null>(null);
 
@@ -749,7 +751,7 @@ export default function DashboardClient({
   };
 
   return (
-    <div className="min-h-screen bg-warmth-100 flex flex-col pb-16 md:pb-10 text-warmth-900">
+    <div className="min-h-screen bg-warmth-100 flex flex-col pb-16 md:pb-10 text-warmth-900 w-full max-w-full overflow-x-hidden">
       {/* Realtime Toast Notification - Clean and minimal */}
       {realtimeNotification && (
         <div className="fixed top-4 right-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -761,61 +763,67 @@ export default function DashboardClient({
       )}
 
       {/* Top Header - Solid, warm editorial with Kyoto rain & heartbeat */}
-      <header className="sticky top-0 z-40 bg-[#FAF7F2] border-b border-warmth-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-40 bg-[#FAF7F2] border-b border-warmth-200 w-full max-w-full overflow-hidden">
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 w-full min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
             <button
               onClick={() => triggerFloatingHeart('❤️')}
               title="Click to flutter love hearts"
-              className="w-10 h-10 rounded-xl bg-rosewood-700 hover:bg-rosewood-800 active:scale-95 text-white flex items-center justify-center font-bold text-sm shadow-sm transition group"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-rosewood-700 hover:bg-rosewood-800 active:scale-95 text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm transition group shrink-0"
             >
-              <Heart className="w-5 h-5 fill-white animate-heartbeat group-hover:scale-110 transition-transform" />
+              <Heart className="w-4 h-4 sm:w-5 sm:h-5 fill-white animate-heartbeat group-hover:scale-110 transition-transform" />
             </button>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-serif font-bold text-warmth-900 leading-tight">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h1 className="text-sm sm:text-lg font-serif font-bold text-warmth-900 leading-tight truncate max-w-[150px] sm:max-w-none">
                   {user.displayName} & {partnerName}
                 </h1>
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
-                  <ShieldCheck className="w-3 h-3 mr-1 text-emerald-600" /> Paired
-                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowCoupleKeyModal(true)}
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] sm:text-[11px] font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition shrink-0 active:scale-95"
+                  title="View Secret Couple Key & 2-Person Sync Chamber"
+                >
+                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                  <span>Paired</span>
+                  <span className="text-[9px] bg-emerald-200/80 px-1 rounded text-emerald-900 font-mono font-bold">🔑 Key</span>
+                </button>
               </div>
-              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              <div className="flex items-center gap-1.5 mt-0.5 text-[10px] sm:text-xs text-warmth-600 truncate">
                 {daysTogether !== null && daysTogether >= 0 && (
-                  <p className="text-xs text-warmth-600 font-normal">
-                    {daysTogether.toLocaleString()} days woven in love
-                  </p>
+                  <span className="truncate">{daysTogether.toLocaleString()} days woven</span>
                 )}
-                <span className="text-warmth-300 hidden sm:inline">•</span>
-                {/* Live Realtime Sync Indicator */}
-                <div className="flex items-center gap-1.5 text-[11px] font-normal text-warmth-600">
-                  {syncStatus === 'connected' ? (
-                    <span className="flex items-center gap-1 text-emerald-700 font-medium">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      Live Sync • 72 BPM
-                    </span>
-                  ) : syncStatus === 'fallback_polling' ? (
-                    <span className="flex items-center gap-1 text-warmth-700">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
-                      Polling (5s)
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1 text-warmth-400">
-                      <span className="w-1.5 h-1.5 rounded-full bg-warmth-400" />
-                      Connecting
-                    </span>
-                  )}
-                </div>
+                <span className="text-warmth-300">•</span>
+                <button
+                  type="button"
+                  onClick={() => setShowCoupleKeyModal(true)}
+                  className="flex items-center gap-1 text-emerald-700 hover:underline shrink-0 font-medium"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Live Sync</span>
+                </button>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            {/* Secret Couple Key button */}
+            <button
+              type="button"
+              onClick={() => setShowCoupleKeyModal(true)}
+              title="Our Unique Secret Couple Key"
+              className="py-1.5 px-2 sm:px-2.5 rounded-lg text-rosewood-800 hover:text-rosewood-900 bg-rosewood-50 hover:bg-rosewood-100 transition text-xs font-semibold flex items-center gap-1 border border-rosewood-200 shadow-2xs"
+            >
+              <Lock className="w-3.5 h-3.5 text-rosewood-700" />
+              <span className="hidden sm:inline">Couple Key</span>
+            </button>
+
             {/* Kyoto Rain Sanctuary Ambient Sound Toggle */}
             <button
+              type="button"
               onClick={toggleAmbientSound}
               title={ambientPlaying ? 'Pause Kyoto Rain soundscape' : 'Play Kyoto Rain ambient soundscape'}
-              className={`py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 border transition ${
+              className={`p-1.5 sm:py-1.5 sm:px-2.5 rounded-lg text-xs font-medium flex items-center gap-1 border transition ${
                 ambientPlaying
                   ? 'bg-rosewood-100 text-rosewood-800 border-rosewood-300 shadow-inner'
                   : 'bg-white text-warmth-700 hover:bg-warmth-100 border-warmth-300'
@@ -824,12 +832,12 @@ export default function DashboardClient({
               {ambientPlaying ? (
                 <>
                   <Volume2 className="w-3.5 h-3.5 text-rosewood-700 animate-pulse" />
-                  <span className="hidden sm:inline text-[11px]">Kyoto Rain</span>
+                  <span className="hidden md:inline text-[11px]">Kyoto Rain</span>
                 </>
               ) : (
                 <>
                   <Headphones className="w-3.5 h-3.5 text-warmth-600" />
-                  <span className="hidden sm:inline text-[11px]">Sanctuary Rain</span>
+                  <span className="hidden md:inline text-[11px]">Rain</span>
                 </>
               )}
             </button>
@@ -837,65 +845,69 @@ export default function DashboardClient({
             <Link
               href="/onboarding"
               title="Personalize Sanctuary with Love Blueprint Q&A"
-              className="py-1.5 px-3 rounded-lg text-rosewood-800 hover:text-rosewood-900 bg-rosewood-50 hover:bg-rosewood-100 transition text-xs font-medium flex items-center gap-1.5 border border-rosewood-200"
+              className="p-1.5 sm:py-1.5 sm:px-2.5 rounded-lg text-rosewood-800 hover:text-rosewood-900 bg-rosewood-50 hover:bg-rosewood-100 transition text-xs font-medium flex items-center gap-1 border border-rosewood-200"
             >
               <Sparkles className="w-3.5 h-3.5 text-rosewood-700" />
-              <span className="hidden sm:inline">Love Blueprint</span>
+              <span className="hidden md:inline">Blueprint</span>
             </Link>
 
             <button
+              type="button"
               onClick={() => setShowUnlinkModal(true)}
               title="Space Settings & Export"
-              className="py-1.5 px-3 rounded-lg text-warmth-700 hover:text-warmth-900 hover:bg-warmth-200/80 transition text-xs font-medium flex items-center gap-1.5 border border-warmth-300 bg-white"
+              className="p-1.5 sm:py-1.5 sm:px-2.5 rounded-lg text-warmth-700 hover:text-warmth-900 hover:bg-warmth-200/80 transition text-xs font-medium flex items-center gap-1 border border-warmth-300 bg-white"
             >
               <Download className="w-3.5 h-3.5 text-warmth-500" />
-              <span className="hidden sm:inline">Export</span>
+              <span className="hidden md:inline">Export</span>
             </button>
             <button
+              type="button"
               onClick={handleLogout}
               title="Sign out"
               className="p-1.5 rounded-lg text-warmth-600 hover:text-rosewood-700 hover:bg-warmth-200/80 transition border border-transparent hover:border-warmth-300"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
         </div>
 
-        {/* Navigation Tabs - Tactile Editorial Ribbons */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex items-center gap-1.5 overflow-x-auto py-2 no-scrollbar">
-          {[
-            { id: 'overview', label: 'Our Story', icon: LayoutDashboard },
-            { id: 'cycle', label: 'Cycle & BF Care', icon: Flower2 },
-            { id: 'calendar', label: 'Dates & Calendar', icon: CalendarIcon },
-            { id: 'lists', label: 'Bucket Lists', icon: CheckSquare },
-            { id: 'checkin', label: 'Weekly Rituals', icon: Smile },
-            { id: 'memories', label: 'Polaroid Vault', icon: Camera },
-            { id: 'preferences', label: 'Love Map', icon: User },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                id={`tab-nav-${tab.id}`}
-                onClick={() => handleTabChange(tab.id as any)}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
-                  isActive
-                    ? 'bg-rosewood-700 text-white shadow-sm font-semibold'
-                    : 'text-warmth-700 hover:text-warmth-900 hover:bg-warmth-200/70'
-                }`}
-              >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-warmth-500'}`} />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
+        {/* Navigation Tabs - Wrapped with strict overflow containment */}
+        <div className="w-full max-w-full overflow-hidden border-t border-warmth-200/60 bg-[#FAF7F2]">
+          <div className="max-w-4xl mx-auto px-2 sm:px-6 flex items-center gap-1 sm:gap-1.5 overflow-x-auto py-2 no-scrollbar touch-pan-x min-w-0 w-full">
+            {[
+              { id: 'overview', label: 'Our Story', icon: LayoutDashboard },
+              { id: 'cycle', label: 'Cycle & BF Care', icon: Flower2 },
+              { id: 'calendar', label: 'Dates & Calendar', icon: CalendarIcon },
+              { id: 'lists', label: 'Bucket Lists', icon: CheckSquare },
+              { id: 'checkin', label: 'Weekly Rituals', icon: Smile },
+              { id: 'memories', label: 'Polaroid Vault', icon: Camera },
+              { id: 'preferences', label: 'Love Map', icon: User },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  id={`tab-nav-${tab.id}`}
+                  onClick={() => handleTabChange(tab.id as any)}
+                  className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition shrink-0 ${
+                    isActive
+                      ? 'bg-rosewood-700 text-white shadow-sm font-semibold'
+                      : 'text-warmth-700 hover:text-warmth-900 hover:bg-warmth-200/70'
+                  }`}
+                >
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-warmth-500'}`} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="max-w-4xl mx-auto w-full px-4 sm:px-6 pt-6 flex-1">
+      <main className="max-w-4xl mx-auto w-full max-w-full px-3.5 sm:px-6 pt-5 sm:pt-6 flex-1 min-w-0 overflow-x-hidden">
         {/* TAB: OVERVIEW (Stitch Screen 1: Our Story & Dashboard) */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
@@ -1853,6 +1865,17 @@ export default function DashboardClient({
             triggerFloatingHeart('✨');
             showNotification('New question set for tonight!');
           }}
+        />
+      )}
+
+      {/* Secret Couple Key & Sync Modal */}
+      {showCoupleKeyModal && (
+        <CoupleKeyModal
+          isOpen={showCoupleKeyModal}
+          onClose={() => setShowCoupleKeyModal(false)}
+          coupleInfo={coupleInfo}
+          currentUserName={user.displayName}
+          syncStatus={syncStatus}
         />
       )}
     </div>
