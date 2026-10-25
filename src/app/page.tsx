@@ -34,6 +34,7 @@ export default async function HomePage() {
     loveNotes,
     dailyPrompt,
     partnerMoods,
+    latestCycle,
   ] = await Promise.all([
     dal.couple.getDetails(),
     dal.events.getAll(),
@@ -47,6 +48,7 @@ export default async function HomePage() {
     dal.loveNotes.getAll(),
     dal.dailyPrompts.getLatest(),
     dal.partnerMoods.getAll(),
+    dal.cycles.getLatest(),
   ]);
 
   return (
@@ -61,6 +63,7 @@ export default async function HomePage() {
       initialLoveNotes={loveNotes}
       initialDailyPrompt={dailyPrompt}
       initialPartnerMoods={partnerMoods}
+      initialCycle={latestCycle}
     />
   );
 }

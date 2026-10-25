@@ -16,6 +16,7 @@ import {
   dailyPrompts,
   dailyPromptAnswers,
   partnerMoods,
+  cycles,
 } from '@/lib/db/schema';
 import { eq, and, desc, asc, sql } from 'drizzle-orm';
 
@@ -97,6 +98,7 @@ export function createCoupleDal(context: DalContext) {
         const couplePrompts = await db.select().from(dailyPrompts).where(eq(dailyPrompts.coupleId, coupleId));
         const couplePromptAnswers = await db.select().from(dailyPromptAnswers).where(eq(dailyPromptAnswers.coupleId, coupleId));
         const coupleMoods = await db.select().from(partnerMoods).where(eq(partnerMoods.coupleId, coupleId));
+        const coupleCycles = await db.select().from(cycles).where(eq(cycles.coupleId, coupleId));
 
         return {
           exportedAt: new Date().toISOString(),
@@ -113,6 +115,7 @@ export function createCoupleDal(context: DalContext) {
           dailyPrompts: couplePrompts,
           dailyPromptAnswers: couplePromptAnswers,
           partnerMoods: coupleMoods,
+          cycles: coupleCycles,
         };
       },
 
@@ -973,6 +976,91 @@ export function createCoupleDal(context: DalContext) {
           })
           .returning();
         return row;
+      },
+    },
+
+    // ==================== PERIOD & CYCLE SANCTUARY TRACKER ====================
+    cycles: {
+      async getLatest() {
+        const [latest] = await db
+          .select()
+          .from(cycles)
+          .where(eq(cycles.coupleId, coupleId))
+          .orderBy(desc(cycles.startDate))
+          .limit(1);
+        return latest || null;
+      },
+
+      async getAll() {
+        return db
+          .select()
+          .from(cycles)
+          .where(eq(cycles.coupleId, coupleId))
+          .orderBy(desc(cycles.startDate));
+      },
+
+      async logCycle(data: {
+        startDate: string;
+        endDate?: string;
+        periodLength?: number;
+        cycleLength?: number;
+        flow?: 'light' | 'medium' | 'heavy' | 'spotting';
+        symptoms?: string[];
+        mood?: string;
+        comfortRequest?: string;
+        notes?: string;
+      }) {
+        const id = crypto.randomUUID();
+        const [row] = await db
+          .insert(cycles)
+          .values({
+            id,
+            coupleId,
+            loggedByUserId: userId,
+            startDate: data.startDate,
+            endDate: data.endDate || null,
+            periodLength: data.periodLength ?? 5,
+            cycleLength: data.cycleLength ?? 28,
+            flow: data.flow || 'medium',
+            symptoms: JSON.stringify(data.symptoms || []),
+            mood: data.mood || 'sensitive',
+            comfortRequest: data.comfortRequest || null,
+            notes: data.notes || null,
+            partnerCareNotified: false,
+            updatedAt: new Date(),
+          })
+          .returning();
+        return row;
+      },
+
+      async updateComfortRequest(cycleId: string, comfortRequest: string) {
+        const [existing] = await db
+          .select()
+          .from(cycles)
+          .where(and(eq(cycles.id, cycleId), eq(cycles.coupleId, coupleId)));
+
+        if (!existing) throw new UnauthorizedCoupleAccessError();
+
+        const [updated] = await db
+          .update(cycles)
+          .set({ comfortRequest, partnerCareNotified: true, updatedAt: new Date() })
+          .where(and(eq(cycles.id, cycleId), eq(cycles.coupleId, coupleId)))
+          .returning();
+        return updated;
+      },
+
+      async delete(cycleId: string) {
+        const [existing] = await db
+          .select()
+          .from(cycles)
+          .where(and(eq(cycles.id, cycleId), eq(cycles.coupleId, coupleId)));
+
+        if (!existing) throw new UnauthorizedCoupleAccessError();
+
+        await db
+          .delete(cycles)
+          .where(and(eq(cycles.id, cycleId), eq(cycles.coupleId, coupleId)));
+        return { success: true };
       },
     },
   };

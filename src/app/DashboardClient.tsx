@@ -34,14 +34,18 @@ import {
   Plus,
   Trash2,
   PenLine,
+  Flower2,
+  Moon,
 } from 'lucide-react';
 import CalendarView from '@/components/calendar/CalendarView';
 import ListsView from '@/components/lists/ListsView';
 import CheckinView from '@/components/checkin/CheckinView';
 import MemoriesView from '@/components/memories/MemoriesView';
 import PreferencesView from '@/components/preferences/PreferencesView';
+import CycleTrackerView from '@/components/cycle/CycleTrackerView';
 import LoveNoteComposerModal from '@/components/notes/LoveNoteComposerModal';
 import DailyPromptModal from '@/components/prompts/DailyPromptModal';
+import { calculateCycleInfo } from '@/lib/utils/cycle';
 import {
   tapLoveNoteAction,
   replyLoveNoteAction,
@@ -91,6 +95,7 @@ interface DashboardProps {
   initialLoveNotes?: any[];
   initialDailyPrompt?: any;
   initialPartnerMoods?: any[];
+  initialCycle?: any;
 }
 
 export default function DashboardClient({
@@ -104,10 +109,12 @@ export default function DashboardClient({
   initialLoveNotes = [],
   initialDailyPrompt = null,
   initialPartnerMoods = [],
+  initialCycle = null,
 }: DashboardProps) {
   const router = useRouter();
+  const [currentCycle, setCurrentCycle] = useState<any>(initialCycle);
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'calendar' | 'lists' | 'checkin' | 'memories' | 'preferences'
+    'overview' | 'cycle' | 'calendar' | 'lists' | 'checkin' | 'memories' | 'preferences'
   >('overview');
 
   useEffect(() => {
@@ -119,7 +126,7 @@ export default function DashboardClient({
       const tabParam = params.get('tab');
       if (
         tabParam &&
-        ['overview', 'calendar', 'lists', 'checkin', 'memories', 'preferences'].includes(tabParam)
+        ['overview', 'cycle', 'calendar', 'lists', 'checkin', 'memories', 'preferences'].includes(tabParam)
       ) {
         setActiveTab(tabParam as any);
       }
@@ -127,7 +134,7 @@ export default function DashboardClient({
   }, []);
 
   const handleTabChange = useCallback(
-    (newTab: 'overview' | 'calendar' | 'lists' | 'checkin' | 'memories' | 'preferences') => {
+    (newTab: 'overview' | 'cycle' | 'calendar' | 'lists' | 'checkin' | 'memories' | 'preferences') => {
       setActiveTab(newTab);
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
@@ -426,6 +433,28 @@ export default function DashboardClient({
             );
             triggerFloatingHeart(event.payload.emoji);
           }
+          break;
+
+        case 'cycle:updated':
+          setCurrentCycle(event.payload);
+          if (isFromPartner) {
+            showNotification(`${partnerName} updated the Cycle Sanctuary 🌸`);
+            triggerFloatingHeart('🌸');
+          }
+          break;
+
+        case 'cycle:comfort_signal':
+          setCurrentCycle((prev: any) =>
+            prev ? { ...prev, comfortRequest: event.payload.signalText } : prev
+          );
+          if (isFromPartner) {
+            showNotification(`Comfort Signal from ${partnerName}: "${event.payload.signalText}" 🌸`);
+            triggerFloatingHeart('🌸');
+          }
+          break;
+
+        case 'cycle:deleted':
+          setCurrentCycle(null);
           break;
 
         default:
@@ -836,6 +865,7 @@ export default function DashboardClient({
         <div className="max-w-4xl mx-auto px-4 sm:px-6 flex items-center gap-1.5 overflow-x-auto py-2 no-scrollbar">
           {[
             { id: 'overview', label: 'Our Story', icon: LayoutDashboard },
+            { id: 'cycle', label: 'Cycle & BF Care', icon: Flower2 },
             { id: 'calendar', label: 'Dates & Calendar', icon: CalendarIcon },
             { id: 'lists', label: 'Bucket Lists', icon: CheckSquare },
             { id: 'checkin', label: 'Weekly Rituals', icon: Smile },
@@ -967,6 +997,65 @@ export default function DashboardClient({
                   </div>
                 </div>
               </div>
+
+              {/* TACTILE CYCLE SANCTUARY & BF CARE OVERVIEW CARD */}
+              {(() => {
+                const cStartDate = currentCycle?.startDate || new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                const cInfo = calculateCycleInfo(cStartDate, currentCycle?.periodLength || 5, currentCycle?.cycleLength || 28);
+                return (
+                  <div className="mt-5 p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-rose-50/70 via-warmth-50 to-warmth-100/60 border border-rose-200/80 shadow-xs relative overflow-hidden">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-rose-100/80 border border-rose-200 flex items-center justify-center text-rosewood-700 shrink-0 shadow-2xs">
+                          <Flower2 className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs font-serif font-bold text-warmth-900">
+                              Cycle Sanctuary & BF Care
+                            </span>
+                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${cInfo.badgeBg} ${cInfo.badgeColor}`}>
+                              {cInfo.phaseName} • Day {cInfo.dayOfCycle}
+                            </span>
+                          </div>
+                          <p className="text-xs text-warmth-600 mt-0.5">
+                            {cInfo.daysUntilNextPeriod === 0
+                              ? 'Period expected today'
+                              : `${cInfo.daysUntilNextPeriod} days until next cycle (${cInfo.nextPeriodDate})`}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleTabChange('cycle')}
+                        className="px-3 py-1.5 rounded-lg bg-rosewood-700 hover:bg-rosewood-800 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-2xs active:scale-95"
+                      >
+                        <span>Open Sanctuary</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {/* Girlfriend's Active Comfort Signal or BF Tip */}
+                    {currentCycle?.comfortRequest ? (
+                      <div className="mt-3.5 p-3 rounded-xl bg-white border border-rose-200 shadow-2xs flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 text-xs text-rosewood-900 font-medium">
+                          <span className="text-base">🌸</span>
+                          <span><strong>{partnerName}&apos;s Signal:</strong> &ldquo;{currentCycle.comfortRequest}&rdquo;</span>
+                        </div>
+                        <span className="text-[10px] text-rosewood-600 font-semibold uppercase tracking-wider shrink-0 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">
+                          Needs TLC
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="mt-3.5 pt-3 border-t border-rose-200/50 flex items-center gap-2 text-xs text-warmth-700">
+                        <span className="text-rosewood-700 font-semibold shrink-0">💡 BF Tip:</span>
+                        <span className="italic truncate">&ldquo;{cInfo.boyfriendAdvice.headline}&rdquo; — {cInfo.boyfriendAdvice.mindset}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* TWO-COLUMN EDITORIAL SCRAPBOOK GRID */}
@@ -1449,6 +1538,20 @@ export default function DashboardClient({
               </div>
             </div>
           </div>
+        )}
+
+        {/* TAB: CYCLE SANCTUARY & BF CARE */}
+        {activeTab === 'cycle' && (
+          <CycleTrackerView
+            user={{ id: user.id, displayName: user.displayName }}
+            partner={coupleInfo.partner ? { id: coupleInfo.partner.id, displayName: coupleInfo.partner.displayName } : null}
+            initialCycle={currentCycle}
+            onCycleUpdated={(updated) => setCurrentCycle(updated)}
+            showToast={(msg) => {
+              showNotification(msg);
+              triggerFloatingHeart('🌸');
+            }}
+          />
         )}
 
         {/* TAB: CALENDAR */}

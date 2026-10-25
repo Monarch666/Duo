@@ -181,3 +181,18 @@ export const onboardingSchema = z.object({
 
 export type OnboardingData = z.infer<typeof onboardingSchema>;
 
+// ==================== CYCLE & PERIOD VALIDATIONS ====================
+export const logCycleSchema = z.object({
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Start date must be in YYYY-MM-DD format'),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'End date must be in YYYY-MM-DD format').optional().or(z.literal('')),
+  periodLength: z.coerce.number().int().min(1).max(14).default(5),
+  cycleLength: z.coerce.number().int().min(18).max(60).default(28),
+  flow: z.enum(['light', 'medium', 'heavy', 'spotting']).default('medium'),
+  symptoms: z.array(z.string()).default([]),
+  mood: z.string().trim().max(60).default('sensitive'),
+  comfortRequest: z.string().trim().max(300).optional().or(z.literal('')),
+  notes: z.string().trim().max(500).optional().or(z.literal('')),
+});
+
+export type LogCycleInput = z.infer<typeof logCycleSchema>;
+

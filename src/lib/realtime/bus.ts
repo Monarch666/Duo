@@ -20,7 +20,10 @@ export interface CoupleRealtimeEvent {
     | 'love_note:deleted'
     | 'daily_prompt:created'
     | 'daily_prompt:answered'
-    | 'partner_mood:updated';
+    | 'partner_mood:updated'
+    | 'cycle:updated'
+    | 'cycle:comfort_signal'
+    | 'cycle:deleted';
   payload: any;
   actorUserId?: string;
   timestamp: string;

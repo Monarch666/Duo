@@ -372,3 +372,31 @@ export const partnerMoods = pgTable(
     ),
   })
 );
+
+// Period & Cycle Sanctuary Tracker (Cycle logging + BF Care & Advice Guide)
+export const cycles = pgTable('cycles', {
+  id: text('id').primaryKey(),
+  coupleId: text('couple_id')
+    .notNull()
+    .references(() => couples.id, { onDelete: 'cascade' }),
+  loggedByUserId: text('logged_by_user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  startDate: text('start_date').notNull(), // YYYY-MM-DD
+  endDate: text('end_date'), // YYYY-MM-DD
+  periodLength: integer('period_length').notNull().default(5),
+  cycleLength: integer('cycle_length').notNull().default(28),
+  flow: text('flow', { enum: ['light', 'medium', 'heavy', 'spotting'] }).default('medium'),
+  symptoms: text('symptoms').default('[]'), // JSON array: cramps, fatigue, cravings, etc.
+  mood: text('mood').default('sensitive'),
+  comfortRequest: text('comfort_request'), // Custom signal to BF e.g. "Warm tea & foot massage please"
+  notes: text('notes'),
+  partnerCareNotified: boolean('partner_care_notified').default(false),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
