@@ -42,14 +42,18 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen flex flex-col justify-center px-4 py-12 sm:px-6 lg:px-8 bg-warmth-100 text-warmth-900">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-rosewood-700 text-white mb-3 shadow-sm">
-          <Heart className="w-6 h-6 fill-white" />
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white border-2 border-rosewood-200 p-1 mb-3 shadow-md shadow-rosewood-700/10 overflow-hidden">
+          <img
+            src="/images/otter-mascot.png"
+            alt="Duo Mascot Otters"
+            className="w-full h-full object-contain"
+          />
         </div>
         <h1 className="text-2xl font-serif font-bold text-warmth-900 tracking-tight">
           Create an Account
         </h1>
         <p className="mt-1 text-xs text-warmth-600">
-          Sign up to link with your partner
+          Sign up to link with your partner • Always holding hands
         </p>
       </div>
 

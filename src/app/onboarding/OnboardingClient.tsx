@@ -221,8 +221,12 @@ export default function OnboardingClient({
       {/* Header bar */}
       <header className="max-w-2xl w-full mx-auto flex items-center justify-between pb-4 border-b border-warmth-200">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-rosewood-700 text-white flex items-center justify-center shadow-sm">
-            <Heart className="w-4 h-4 fill-white" />
+          <div className="w-8 h-8 rounded-xl bg-white border border-rosewood-200 p-0.5 overflow-hidden flex items-center justify-center shadow-2xs">
+            <img
+              src="/images/otter-mascot.png"
+              alt="Duo Mascot Otters"
+              className="w-full h-full object-contain"
+            />
           </div>
           <div>
             <h1 className="text-base font-serif font-bold text-warmth-900 leading-none">
@@ -261,8 +265,12 @@ export default function OnboardingClient({
         {/* ==================== SUCCESS SCREEN ==================== */}
         {isCompleted ? (
           <div className="bg-white rounded-2xl p-7 sm:p-9 border border-warmth-200 shadow-warm text-center space-y-6 animate-in fade-in zoom-in-95 duration-200">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-rosewood-50 border border-rosewood-200 text-rosewood-700 mx-auto shadow-sm">
-              <Sparkles className="w-8 h-8" />
+            <div className="w-20 h-20 rounded-2xl bg-white border-2 border-rosewood-200 p-1 mx-auto shadow-sm overflow-hidden flex items-center justify-center">
+              <img
+                src="/images/otter-mascot.png"
+                alt="Duo Mascot Otters"
+                className="w-full h-full object-contain"
+              />
             </div>
 
             <div>
@@ -270,7 +278,7 @@ export default function OnboardingClient({
                 Your Sanctuary is Ready
               </h2>
               <p className="text-xs text-warmth-600 mt-1.5 max-w-md mx-auto leading-relaxed">
-                We’ve prepared your shared calendar, loaded your dream date bucket lists, mapped your love language, and sealed your first welcome note.
+                Like sea otters holding hands, your shared calendar, dream dates, and love languages are now beautifully woven together.
               </p>
             </div>
 

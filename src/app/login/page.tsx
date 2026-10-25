@@ -149,16 +149,20 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col justify-between px-4 py-8 sm:px-6 lg:px-8 bg-warmth-100 text-warmth-900 select-none">
       <div className="sm:mx-auto sm:w-full sm:max-w-md my-auto">
-        {/* Brand Header */}
+        {/* Brand Header with Duo Mascot Otters */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-rosewood-700 text-white mb-3 shadow-md shadow-rosewood-700/20">
-            <Heart className="w-7 h-7 fill-white" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white border-2 border-rosewood-200/90 p-1 mb-3 shadow-md shadow-rosewood-700/10 overflow-hidden">
+            <img
+              src="/images/otter-mascot.png"
+              alt="Duo Mascot Otters"
+              className="w-full h-full object-contain"
+            />
           </div>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-warmth-900 tracking-tight">
             Duo Sanctuary
           </h1>
           <p className="mt-1 text-xs text-warmth-600 font-medium">
-            An intimate, private sanctuary designed exclusively for two
+            Always holding hands, never drifting apart • For exactly two
           </p>
         </div>
 
@@ -325,10 +329,17 @@ export default function LoginPage() {
           {/* STEP 2: INTIMATE Q&A PARTNER VERIFICATION */}
           {step === 'qna' && (
             <div className="space-y-5 animate-fade-in text-left">
-              <div className="text-center pb-2 border-b border-warmth-100">
+              <div className="text-center pb-2 border-b border-warmth-100 flex flex-col items-center">
+                <div className="w-12 h-12 rounded-xl bg-warmth-50 border border-rosewood-200 p-0.5 mb-2 shadow-2xs overflow-hidden flex items-center justify-center">
+                  <img
+                    src="/images/otter-mascot.png"
+                    alt="Duo Mascot Otters"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rosewood-100 text-rosewood-800 mb-1.5">
                   <Sparkles className="w-3 h-3 text-rosewood-600" />
-                  Intimate Verification
+                  Mascot Verification • Which Otter Are You?
                 </span>
                 <h2 className="text-base font-serif font-bold text-warmth-900">
                   {currentQuestion.question}

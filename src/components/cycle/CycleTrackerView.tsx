@@ -302,12 +302,16 @@ export default function CycleTrackerView({
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-warmth-200 pb-5 mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-warmth-100 border border-warmth-300 flex items-center justify-center text-warmth-800 shadow-xs">
-              <span className="text-xl">🤝</span>
+            <div className="w-12 h-12 rounded-xl bg-white border border-rosewood-200 p-0.5 flex items-center justify-center shadow-xs overflow-hidden shrink-0">
+              <img
+                src="/images/otter-mascot.png"
+                alt="Duo Mascot Otters"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <span className="text-[11px] font-semibold text-rosewood-700 uppercase tracking-wider">
-                Gentle Partner Insights
+                Gentle Partner Insights • Otter Care
               </span>
               <h2 className="text-lg sm:text-xl font-serif font-bold text-warmth-900">
                 Boyfriend’s Care Guide for {partnerName}
@@ -321,7 +325,7 @@ export default function CycleTrackerView({
         </div>
 
         {/* Mindset Callout */}
-        <div className="mb-6 p-4 rounded-xl bg-rosewood-50/70 border border-rosewood-200 text-left">
+        <div className="mb-4 p-4 rounded-xl bg-rosewood-50/70 border border-rosewood-200 text-left">
           <div className="flex items-start gap-2.5">
             <Sparkles className="w-4 h-4 text-rosewood-700 shrink-0 mt-0.5" />
             <div>
@@ -332,6 +336,19 @@ export default function CycleTrackerView({
                 {cycleInfo.boyfriendAdvice.mindset}
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* The Otter Rule of Comfort */}
+        <div className="mb-6 p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 text-left flex items-center gap-3">
+          <span className="text-2xl shrink-0">🦦</span>
+          <div>
+            <h5 className="text-xs font-serif font-bold text-amber-950">
+              The Otter Rule of Comfort:
+            </h5>
+            <p className="text-[11px] text-amber-900 mt-0.5 leading-relaxed">
+              Wrap her in cozy blankets, provide warm teas or snacks, hold hands gently without expectations, and let her rest anchored safely in your care.
+            </p>
           </div>
         </div>
 

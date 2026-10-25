@@ -767,11 +767,20 @@ export default function DashboardClient({
         <div className="max-w-4xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 w-full min-w-0">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
             <button
-              onClick={() => triggerFloatingHeart('❤️')}
-              title="Click to flutter love hearts"
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-rosewood-700 hover:bg-rosewood-800 active:scale-95 text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm transition group shrink-0"
+              onClick={() => {
+                triggerFloatingHeart('🦦');
+                setTimeout(() => triggerFloatingHeart('❤️'), 160);
+                setTimeout(() => triggerFloatingHeart('💕'), 320);
+                showNotification('Our otters hold hands tightly! 💕');
+              }}
+              title="Duo Mascot: Otters holding hands (Tap to flutter!)"
+              className="w-9 h-9 sm:w-11 sm:h-11 rounded-full p-0.5 bg-warmth-50 hover:bg-rosewood-50 border-2 border-rosewood-300 hover:border-rosewood-500 active:scale-95 flex items-center justify-center shadow-sm transition group shrink-0 overflow-hidden"
             >
-              <Heart className="w-4 h-4 sm:w-5 sm:h-5 fill-white animate-heartbeat group-hover:scale-110 transition-transform" />
+              <img
+                src="/images/otter-mascot.png"
+                alt="Duo Mascot Otters"
+                className="w-full h-full object-contain rounded-full group-hover:scale-110 transition-transform"
+              />
             </button>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -933,6 +942,35 @@ export default function DashboardClient({
                 <p className="text-[11px] font-sans uppercase tracking-widest text-warmth-400 font-semibold">
                   Maya Angelou
                 </p>
+
+                {/* Otter Mascot Sanctuary Keepsake */}
+                <div className="pt-2 flex flex-col items-center justify-center">
+                  <div
+                    onClick={() => {
+                      triggerFloatingHeart('🦦');
+                      triggerFloatingHeart('💖');
+                      showNotification('Holding hands across time, never drifting apart 💕');
+                    }}
+                    className="group cursor-pointer inline-flex flex-col items-center bg-warmth-50/80 hover:bg-rose-50/70 border border-warmth-200/90 rounded-2xl p-3 sm:p-4 transition shadow-2xs hover:shadow-sm"
+                    title="Tap to flutter mascot love"
+                  >
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-white border border-rosewood-200 p-1.5 shadow-2xs overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
+                      <img
+                        src="/images/otter-mascot.png"
+                        alt="Duo Mascot Otters"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div className="mt-2 text-center">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rosewood-800 tracking-wide uppercase">
+                        <span>🦦</span> Duo Mascot
+                      </span>
+                      <p className="text-[11px] text-warmth-600 italic mt-0.5">
+                        &ldquo;Otters hold hands so they never drift apart.&rdquo;
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* TACTILE PARTNER MOOD CARDS */}

@@ -153,16 +153,20 @@ export default function PairClient({ userName, currentCouple }: PairClientProps)
         {/* State A: Couple created, waiting for partner */}
         {currentCouple?.status === 'pending' ? (
           <div className="bg-white rounded-xl p-6 sm:p-7 border border-warmth-200 text-center space-y-4">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-warmth-100 text-warmth-800 mb-1">
-              <Users className="w-6 h-6" />
+            <div className="w-20 h-20 mx-auto rounded-2xl bg-white border-2 border-rosewood-200 p-1 shadow-sm overflow-hidden flex items-center justify-center">
+              <img
+                src="/images/otter-mascot.png"
+                alt="Duo Mascot Otters"
+                className="w-full h-full object-contain"
+              />
             </div>
 
             <div>
               <h2 className="text-lg font-serif font-bold text-warmth-900">
-                Waiting for Partner
+                Holding Hands Across the Distance
               </h2>
               <p className="mt-1 text-xs text-warmth-600 leading-relaxed">
-                Share this invite code with your partner. Once they sign up and enter the code, your shared space will unlock automatically.
+                Like sea otters holding hands so ocean tides never separate them, Duo keeps you tethered. Share your secret couple key so your partner otter can lock in!
               </p>
             </div>
 
@@ -249,14 +253,18 @@ export default function PairClient({ userName, currentCouple }: PairClientProps)
           /* State B: Not in a couple space yet -> Create or Join */
           <div className="bg-white rounded-xl p-6 sm:p-7 border border-warmth-200">
             <div className="text-center mb-5">
-              <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-warmth-100 text-warmth-800 mb-2">
-                <Users className="w-5 h-5" />
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-white border border-rosewood-200 p-1 mb-2 shadow-2xs overflow-hidden flex items-center justify-center">
+                <img
+                  src="/images/otter-mascot.png"
+                  alt="Duo Mascot Otters"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <h2 className="text-lg font-serif font-bold text-warmth-900">
                 Link with Your Partner
               </h2>
               <p className="mt-0.5 text-xs text-warmth-600">
-                Duo is designed exclusively for two partners
+                Like sea otters holding hands • Duo connects two hearts
               </p>
             </div>
 

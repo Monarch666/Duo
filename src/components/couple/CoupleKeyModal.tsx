@@ -109,15 +109,19 @@ export default function CoupleKeyModal({
         {/* Modal Header */}
         <div className="flex items-center justify-between pt-1">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-rosewood-50 border border-rosewood-200 text-rosewood-800 flex items-center justify-center shrink-0 shadow-2xs">
-              <Lock className="w-4 h-4 text-rosewood-700" />
+            <div className="w-10 h-10 rounded-xl bg-white border border-rosewood-200 p-0.5 overflow-hidden flex items-center justify-center shrink-0 shadow-2xs">
+              <img
+                src="/images/otter-mascot.png"
+                alt="Duo Mascot Otters"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <h3 className="text-base font-serif font-bold text-warmth-900 leading-tight">
                 Our Secret Couple Key
               </h3>
               <p className="text-[11px] text-warmth-600">
-                Cryptographically sealed 2-person chamber
+                Guarded by our otters • 2-person private chamber
               </p>
             </div>
           </div>
@@ -295,6 +299,12 @@ export default function CoupleKeyModal({
               </div>
             </div>
           )}
+        </div>
+
+        {/* Otter Mascot Promise */}
+        <div className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-rosewood-50/70 border border-rosewood-100 text-[11px] text-rosewood-900 font-medium text-center">
+          <span>🦦</span>
+          <span>Sea otters hold hands in sleep so ocean tides never drift them apart.</span>
         </div>
 
         {/* Close Button */}
