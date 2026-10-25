@@ -18,6 +18,14 @@ const config: CapacitorConfig = {
     url: serverUrl,
     cleartext: true, // Enables local HTTP during local network development
     androidScheme: 'https',
+    allowNavigation: [
+      'duo-16pf.onrender.com',
+      '*.onrender.com',
+      '*.supabase.co',
+      'dtwsthyzxprksadrwaiy.supabase.co',
+      'fonts.googleapis.com',
+      'fonts.gstatic.com',
+    ],
   },
   android: {
     allowMixedContent: true,

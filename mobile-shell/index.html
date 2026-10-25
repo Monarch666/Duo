@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Duo — Private Sanctuary</title>
+  <title>Duo — Private Sanctuary for Two</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -22,18 +22,44 @@
       background: #FFFFFF;
       border: 1px solid #EBD7C2;
       border-radius: 24px;
-      padding: 32px 24px;
+      padding: 36px 28px;
       max-width: 380px;
       width: 100%;
       box-shadow: 0 10px 25px -5px rgba(51, 39, 37, 0.08);
+      position: relative;
+    }
+    .washi-tape {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90px;
+      height: 20px;
+      background: rgba(232, 141, 150, 0.65);
+      border-radius: 2px;
+      box-shadow: 0 1px 3px rgba(46, 38, 35, 0.08);
+    }
+    .logo-container {
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 18px auto;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(132, 35, 44, 0.15);
+      background: #84232C;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .logo-img {
-      width: 96px;
-      height: 96px;
-      border-radius: 22px;
-      margin-bottom: 16px;
-      box-shadow: 0 6px 16px rgba(132, 35, 44, 0.15);
+      width: 100%;
+      height: 100%;
       object-fit: cover;
+    }
+    .heart-svg {
+      width: 44px;
+      height: 44px;
+      fill: #FFFFFF;
     }
     h1 {
       font-family: Georgia, "Playfair Display", serif;
@@ -47,38 +73,12 @@
       font-size: 13px;
       color: #735D57;
       line-height: 1.5;
-      margin-bottom: 20px;
-    }
-    .input-group {
-      text-align: left;
-      margin-bottom: 16px;
-    }
-    label {
-      display: block;
-      font-size: 11px;
-      font-weight: 600;
-      color: #594844;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-    input {
-      width: 100%;
-      padding: 12px 14px;
-      border: 1px solid #D9C3AE;
-      border-radius: 12px;
-      background: #FAF7F2;
-      font-size: 14px;
-      color: #332725;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-    input:focus {
-      border-color: #84232C;
-      background: #FFFFFF;
+      margin-bottom: 24px;
     }
     .btn {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       width: 100%;
       padding: 14px;
       background: #84232C;
@@ -89,15 +89,17 @@
       font-weight: 600;
       cursor: pointer;
       text-decoration: none;
+      box-shadow: 0 4px 12px rgba(132, 35, 44, 0.2);
       transition: background 0.15s ease, transform 0.1s ease;
     }
     .btn:hover { background: #6B1B22; }
     .btn:active { transform: scale(0.98); }
     .status-pill {
-      margin-top: 16px;
+      margin-top: 18px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      gap: 8px;
       font-size: 12px;
       color: #8C7E72;
     }
@@ -106,81 +108,84 @@
       height: 8px;
       border-radius: 50%;
       background: #E88D96;
-      animation: pulse 1.5s infinite;
+      animation: pulse 1.4s infinite ease-in-out;
     }
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.2); }
+      50% { opacity: 0.4; transform: scale(1.3); }
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <img src="/icons/icon-192x192.png" alt="Duo Logo" class="logo-img" />
-    <h1>Duo Sanctuary</h1>
-    <p>Private sanctuary for two. Connecting to your shared space...</p>
-    
-    <div class="input-group">
-      <label for="serverUrl">Sanctuary Server URL</label>
-      <input type="text" id="serverUrl" placeholder="https://duo-16pf.onrender.com" />
+    <div class="washi-tape"></div>
+    <div class="logo-container">
+      <img src="https://duo-16pf.onrender.com/icons/icon-192x192.png" 
+           alt="Duo Sanctuary" 
+           class="logo-img" 
+           onerror="this.style.display='none'; document.getElementById('heartSvg').style.display='block';" />
+      <svg id="heartSvg" class="heart-svg" style="display:none;" viewBox="0 0 24 24">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+      </svg>
     </div>
+    <h1>Duo Sanctuary</h1>
+    <p>Private shared space for two.<br/>Connecting to your sanctuary...</p>
 
-    <button class="btn" id="connectBtn" onclick="connectToServer()">Connect to Sanctuary</button>
+    <button class="btn" id="enterBtn" onclick="enterSanctuary()">Enter Sanctuary</button>
 
     <div class="status-pill">
       <span class="dot"></span>
-      <span id="statusText">Connecting to sanctuary...</span>
+      <span id="statusText">Waking up sanctuary... 🌸</span>
     </div>
   </div>
 
   <script>
-    const DEFAULT_URL = 'https://duo-16pf.onrender.com';
-    const input = document.getElementById('serverUrl');
+    const PRODUCTION_URL = 'https://duo-16pf.onrender.com/login';
+    
+    // Purge any legacy stale local IP overrides
+    try {
+      localStorage.removeItem('duo_server_url');
+      sessionStorage.clear();
+    } catch (e) {}
+
     const statusText = document.getElementById('statusText');
-    const savedUrl = localStorage.getItem('duo_server_url') || DEFAULT_URL;
+    let elapsedSeconds = 0;
+    let isNavigating = false;
 
-    input.value = savedUrl;
-
-    function connectToServer() {
-      let target = input.value.trim() || DEFAULT_URL;
-      if (!target.startsWith('http://') && !target.startsWith('https://')) {
-        target = 'https://' + target;
-      }
-      localStorage.setItem('duo_server_url', target);
-      statusText.innerText = 'Connecting to ' + target + '...';
-      window.location.href = target;
+    function enterSanctuary() {
+      if (isNavigating) return;
+      isNavigating = true;
+      statusText.innerText = 'Entering sanctuary... 🌸';
+      window.location.replace(PRODUCTION_URL);
     }
 
-    let checkAttempts = 0;
-    const maxAttempts = 25;
+    function checkServer() {
+      if (isNavigating) return;
 
-    function checkConnection() {
-      const target = input.value.trim() || savedUrl || DEFAULT_URL;
-      checkAttempts++;
-
-      if (checkAttempts > 2) {
-        statusText.innerText = 'Waking up sanctuary... 🌸 (' + (checkAttempts * 3) + 's)';
-      }
-
-      fetch(target + '/login', { method: 'HEAD', mode: 'no-cors' })
-        .then(() => {
-          statusText.innerText = 'Sanctuary ready! Entering...';
-          localStorage.setItem('duo_server_url', target);
-          setTimeout(() => {
-            window.location.href = target;
-          }, 300);
-        })
-        .catch(() => {
-          if (checkAttempts < maxAttempts) {
-            setTimeout(checkConnection, 3000);
-          } else {
-            statusText.innerText = 'Sanctuary is offline or unreachable. Tap Connect to retry.';
-          }
-        });
+      const pingImg = new Image();
+      pingImg.onload = function() {
+        statusText.innerText = 'Sanctuary is ready! Opening... 🌸';
+        enterSanctuary();
+      };
+      pingImg.onerror = function() {
+        elapsedSeconds += 2;
+        if (elapsedSeconds >= 4) {
+          statusText.innerText = 'Waking up sanctuary... 🌸 (' + elapsedSeconds + 's)';
+        }
+        setTimeout(checkServer, 2000);
+      };
+      pingImg.src = 'https://duo-16pf.onrender.com/icons/icon-192x192.png?ping=' + Date.now();
     }
 
-    // Auto-attempt redirect on launch
-    setTimeout(checkConnection, 800);
+    // Auto-attempt immediately on load
+    setTimeout(checkServer, 400);
+
+    // Fallback: If after 8 seconds still not navigated, try a direct replace
+    setTimeout(function() {
+      if (!isNavigating) {
+        enterSanctuary();
+      }
+    }, 15000);
   </script>
 </body>
 </html>

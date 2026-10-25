@@ -74,11 +74,37 @@ self.addEventListener('fetch', (event) => {
           if (rootMatch) return rootMatch;
         }
 
-        return new Response('Offline - Duo Sanctuary is waiting for connection.', {
-          status: 503,
-          statusText: 'Service Unavailable',
-          headers: new Headers({ 'Content-Type': 'text/plain' }),
-        });
+        return new Response(
+          `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Duo Sanctuary</title>
+  <style>
+    body { background: #FAF6EF; color: #332725; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; text-align: center; padding: 20px; }
+    .box { background: white; border: 1px solid #EBD7C2; border-radius: 24px; padding: 36px 28px; max-width: 360px; box-shadow: 0 10px 25px -5px rgba(51, 39, 37, 0.08); }
+    h2 { font-family: Georgia, serif; font-size: 22px; color: #332725; margin: 0 0 8px 0; }
+    p { font-size: 13px; color: #735D57; line-height: 1.5; margin: 0 0 20px 0; }
+    .btn { display: inline-block; width: 100%; background: #84232C; color: white; border: none; border-radius: 14px; padding: 13px 20px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; }
+  </style>
+  <script>
+    setTimeout(function() { window.location.reload(); }, 3500);
+  </script>
+</head>
+<body>
+  <div class="box">
+    <h2>Duo Sanctuary</h2>
+    <p>Waking up your sanctuary... 🌸<br/>Auto-reconnecting momentarily.</p>
+    <button class="btn" onclick="window.location.reload()">Enter Sanctuary</button>
+  </div>
+</body>
+</html>`,
+          {
+            status: 200,
+            headers: new Headers({ 'Content-Type': 'text/html; charset=utf-8' }),
+          }
+        );
       })
   );
 });
