@@ -92,7 +92,11 @@ export async function joinCoupleSpace(
   userId: string,
   inviteCode: string
 ): Promise<PairingResult> {
-  const cleanedCode = inviteCode.trim().toUpperCase();
+  let cleanedCode = (inviteCode || '').trim().toUpperCase().replace(/[\s_]+/g, '-');
+  cleanedCode = cleanedCode.replace(/-+/g, '-');
+  if (!cleanedCode.startsWith('DUO-') && (cleanedCode.length === 4 || cleanedCode.length === 5)) {
+    cleanedCode = `DUO-${cleanedCode}`;
+  }
 
   // Check if user is already in a couple
   const [existingMembership] = await db

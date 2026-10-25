@@ -47,6 +47,17 @@ export default function PairClient({ userName, currentCouple }: PairClientProps)
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const codeParam = params.get('code');
+      if (codeParam) {
+        setInviteCodeInput(codeParam.trim().toUpperCase());
+        setMode('join');
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (currentCouple?.status === 'pending') {
       const interval = setInterval(() => {
         router.refresh();

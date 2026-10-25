@@ -66,7 +66,12 @@ export default function CoupleKeyModal({
   const partnerName = coupleInfo.partner?.displayName || 'Your Partner';
   const partnerEmail = coupleInfo.partner?.email || '';
 
-  const shareText = `Hey my love 💕 Here is our private Duo Couple Secret Key: ${inviteCode}\n\nEnter this key in Duo so our sanctuaries lock together in our private 2-person chamber!`;
+  const pairUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/pair?code=${inviteCode}`
+      : `https://duo-16pf.onrender.com/pair?code=${inviteCode}`;
+
+  const shareText = `Hey my love 💕 Here is our private Duo Couple Secret Key: ${inviteCode}\n\nTap this link or enter the key in Duo so our apps lock together in our private chamber!\n👉 ${pairUrl}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(inviteCode);
