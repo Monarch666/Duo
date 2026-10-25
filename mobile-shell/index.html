@@ -122,19 +122,19 @@
     
     <div class="input-group">
       <label for="serverUrl">Sanctuary Server URL</label>
-      <input type="text" id="serverUrl" placeholder="http://10.136.63.122:3000" />
+      <input type="text" id="serverUrl" placeholder="https://duo-16pf.onrender.com" />
     </div>
 
     <button class="btn" id="connectBtn" onclick="connectToServer()">Connect to Sanctuary</button>
 
     <div class="status-pill">
       <span class="dot"></span>
-      <span id="statusText">Connecting automatically...</span>
+      <span id="statusText">Connecting to sanctuary...</span>
     </div>
   </div>
 
   <script>
-    const DEFAULT_URL = 'http://10.136.63.122:3000';
+    const DEFAULT_URL = 'https://duo-16pf.onrender.com';
     const input = document.getElementById('serverUrl');
     const statusText = document.getElementById('statusText');
     const savedUrl = localStorage.getItem('duo_server_url') || DEFAULT_URL;
@@ -144,23 +144,43 @@
     function connectToServer() {
       let target = input.value.trim() || DEFAULT_URL;
       if (!target.startsWith('http://') && !target.startsWith('https://')) {
-        target = 'http://' + target;
+        target = 'https://' + target;
       }
       localStorage.setItem('duo_server_url', target);
       statusText.innerText = 'Connecting to ' + target + '...';
       window.location.href = target;
     }
 
-    // Auto-attempt redirect on launch
-    setTimeout(() => {
-      fetch(savedUrl + '/api/realtime/poll', { method: 'HEAD', mode: 'no-cors' })
+    let checkAttempts = 0;
+    const maxAttempts = 25;
+
+    function checkConnection() {
+      const target = input.value.trim() || savedUrl || DEFAULT_URL;
+      checkAttempts++;
+
+      if (checkAttempts > 2) {
+        statusText.innerText = 'Waking up sanctuary... 🌸 (' + (checkAttempts * 3) + 's)';
+      }
+
+      fetch(target + '/login', { method: 'HEAD', mode: 'no-cors' })
         .then(() => {
-          window.location.href = savedUrl;
+          statusText.innerText = 'Sanctuary ready! Entering...';
+          localStorage.setItem('duo_server_url', target);
+          setTimeout(() => {
+            window.location.href = target;
+          }, 300);
         })
         .catch(() => {
-          statusText.innerText = 'Could not reach server. Verify PC is on the same Wi-Fi.';
+          if (checkAttempts < maxAttempts) {
+            setTimeout(checkConnection, 3000);
+          } else {
+            statusText.innerText = 'Sanctuary is offline or unreachable. Tap Connect to retry.';
+          }
         });
-    }, 1200);
+    }
+
+    // Auto-attempt redirect on launch
+    setTimeout(checkConnection, 800);
   </script>
 </body>
 </html>

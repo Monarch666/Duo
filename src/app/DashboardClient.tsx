@@ -112,6 +112,9 @@ export default function DashboardClient({
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      }
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('tab');
       if (

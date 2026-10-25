@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:lan": "next dev -H 0.0.0.0",
-    "build": "next build",
-    "start": "next start",
+    "build": "next build --experimental-build-mode=compile",
+    "start": "next start -H 0.0.0.0",
     "test": "vitest run",
     "test:watch": "vitest",
     "db:push": "drizzle-kit push",
@@ -14,7 +14,7 @@
     "backup": "tsx scripts/backup.ts",
     "cap:sync": "cap sync",
     "cap:open": "cap open android",
-    "apk:build": "cmd /c \"cd android && gradlew.bat assembleDebug\""
+    "apk:build": "cmd /c \"set JAVA_HOME=C:\\Users\\aadar\\.jdks\\jdk-17.0.12+7&& cd android && gradlew.bat assembleDebug\""
   },
   "dependencies": {
     "@capacitor/android": "^8.5.3",

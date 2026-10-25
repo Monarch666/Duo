@@ -7,7 +7,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
  * - To test locally over Wi-Fi: set CAPACITOR_SERVER_URL="http://<YOUR_LOCAL_IP>:3000"
  * - To use production deployment: set CAPACITOR_SERVER_URL="https://your-duo-app.netlify.app"
  */
-const serverUrl = process.env.CAPACITOR_SERVER_URL || 'http://10.136.63.122:3000';
+const serverUrl = process.env.CAPACITOR_SERVER_URL || 'https://duo-16pf.onrender.com';
 
 
 const config: CapacitorConfig = {
