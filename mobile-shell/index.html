@@ -489,19 +489,25 @@
       const btnText = document.getElementById('googleBtnText');
       if (btnText) btnText.innerText = 'Connecting...';
 
-      // Try native Capacitor Google Sign-In plugin first (works in Android WebView)
-      if (window.Capacitor?.Plugins?.GoogleSignIn) {
+      // Check for native Capacitor Google Sign-In plugin
+      let plugin = window.Capacitor?.Plugins?.GoogleSignIn;
+      if (!plugin && window.Capacitor?.registerPlugin) {
         try {
-          // Initialize with web client ID and scopes
-          await window.Capacitor.Plugins.GoogleSignIn.initialize({
+          plugin = window.Capacitor.registerPlugin('GoogleSignIn');
+        } catch(e) {}
+      }
+
+      if (plugin) {
+        try {
+          // Standard Sign-In (No sensitive Drive scope at login -> Zero verification blocks)
+          await plugin.initialize({
             clientId: CLIENT_ID,
-            scopes: ['https://www.googleapis.com/auth/drive.file']
           });
-          const result = await window.Capacitor.Plugins.GoogleSignIn.signIn();
-          if (result && (result.idToken || result.email)) {
+          const result = await plugin.signIn();
+          if (result && (result.idToken || result.email || result.displayName)) {
             currentUser = {
               email: result.email || '',
-              name: result.displayName || result.givenName || '',
+              name: result.displayName || result.givenName || 'Partner',
               idToken: result.idToken || '',
               accessToken: result.accessToken || '',
               photoUrl: result.imageUrl || ''
@@ -522,15 +528,18 @@
           }
         } catch (err) {
           console.warn('Native Google Sign-In error:', err);
-          // User cancelled or error — reset button, don't auto-fallback
           if (btnText) btnText.innerText = 'Continue with Google';
+          const msg = (err && (err.message || err.code || JSON.stringify(err))) || '';
+          if (!msg.toLowerCase().includes('cancel') && !msg.toLowerCase().includes('16')) {
+            alert('Google Sign-In note: ' + (msg || 'Unable to connect to Google account.') + '\n\nYou can also tap "Enter Offline Sanctuary" below.');
+          }
           return;
         }
       }
 
-      // Final fallback: enter offline sanctuary directly
+      // If plugin is not available
       if (btnText) btnText.innerText = 'Continue with Google';
-      alert('Google Sign-In is only available in the Android app. Tap "Enter Offline Sanctuary" to continue without an account.');
+      alert('Google Sign-In is only available inside the Android app. Tap "Enter Offline Sanctuary" to continue.');
     }
 
     function enterGuestSanctuary() {
