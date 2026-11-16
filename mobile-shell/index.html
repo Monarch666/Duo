@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Native Google Sign-In handled by Capacitor plugin -->
   <style>
     :root {
       --warmth-50: #FDFCF9;
@@ -485,44 +485,52 @@
       renderAll();
     }
 
-    function triggerGoogleSignIn() {
+    async function triggerGoogleSignIn() {
       const btnText = document.getElementById('googleBtnText');
       if (btnText) btnText.innerText = 'Connecting...';
 
-      if (window.google?.accounts?.oauth2) {
+      // Try native Capacitor Google Sign-In plugin first (works in Android WebView)
+      if (window.Capacitor?.Plugins?.GoogleSignIn) {
         try {
-          const client = google.accounts.oauth2.initTokenClient({
-            client_id: CLIENT_ID,
-            scope: 'https://www.googleapis.com/auth/drive.file email profile openid',
-            callback: (res) => {
-              if (res.access_token) {
-                currentUser = { accessToken: res.access_token };
-                localStorage.setItem('duo_google_user', JSON.stringify(currentUser));
-                if (!sanctuaryData.coupleName) {
-                  promptInitialSetup();
-                } else {
-                  showSanctuary();
-                }
-                flutterHearts();
-              } else {
-                enterGuestSanctuary();
-              }
-            },
-            error_callback: () => {
-              enterGuestSanctuary();
-            }
+          // Initialize with web client ID and scopes
+          await window.Capacitor.Plugins.GoogleSignIn.initialize({
+            clientId: CLIENT_ID,
+            scopes: ['https://www.googleapis.com/auth/drive.file']
           });
-          client.requestAccessToken();
-          return;
+          const result = await window.Capacitor.Plugins.GoogleSignIn.signIn();
+          if (result && (result.idToken || result.email)) {
+            currentUser = {
+              email: result.email || '',
+              name: result.displayName || result.givenName || '',
+              idToken: result.idToken || '',
+              accessToken: result.accessToken || '',
+              photoUrl: result.imageUrl || ''
+            };
+            localStorage.setItem('duo_google_user', JSON.stringify(currentUser));
+            if (!sanctuaryData.coupleName && currentUser.name) {
+              sanctuaryData.coupleName = currentUser.name + ' & Partner';
+              saveState();
+            }
+            if (!sanctuaryData.coupleName) {
+              promptInitialSetup();
+            } else {
+              showSanctuary();
+            }
+            flutterHearts();
+            if (btnText) btnText.innerText = 'Continue with Google';
+            return;
+          }
         } catch (err) {
-          console.warn('GIS error:', err);
+          console.warn('Native Google Sign-In error:', err);
+          // User cancelled or error — reset button, don't auto-fallback
+          if (btnText) btnText.innerText = 'Continue with Google';
+          return;
         }
       }
-      
-      // Fallback if offline or GIS not ready
-      setTimeout(() => {
-        enterGuestSanctuary();
-      }, 300);
+
+      // Final fallback: enter offline sanctuary directly
+      if (btnText) btnText.innerText = 'Continue with Google';
+      alert('Google Sign-In is only available in the Android app. Tap "Enter Offline Sanctuary" to continue without an account.');
     }
 
     function enterGuestSanctuary() {
