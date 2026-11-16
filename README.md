@@ -1,4 +1,4 @@
-# Duo — Private Space for Two
+# Duo Sanctuary — Private Space for Two
 
 > **An intimate, private shared sanctuary built exclusively for exactly two partners.**  
 > 100% self-hosted, running entirely on your local machine with zero external cloud dependencies.
