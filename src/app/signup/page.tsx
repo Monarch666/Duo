@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signUpAction } from '@/lib/actions/auth';
+import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 import { Heart, Lock, Mail, User, ArrowRight, AlertCircle } from 'lucide-react';
 
 export default function SignUpPage() {
@@ -148,6 +149,15 @@ export default function SignUpPage() {
               )}
             </button>
           </form>
+
+          {/* Google Sign-In with Drive Vault */}
+          <div className="relative flex py-2 items-center">
+            <div className="flex-grow border-t border-warmth-200" />
+            <span className="flex-shrink mx-3 text-[11px] text-warmth-500 uppercase tracking-wider font-semibold">Or</span>
+            <div className="flex-grow border-t border-warmth-200" />
+          </div>
+
+          <GoogleSignInButton />
 
           <div className="mt-5 text-center">
             <p className="text-xs text-warmth-600">

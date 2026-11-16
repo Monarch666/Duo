@@ -4,19 +4,17 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { logInAction } from '@/lib/actions/auth';
+import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 import {
   Heart,
   Lock,
   Mail,
   ArrowRight,
   ShieldAlert,
-  UserCheck,
   Eye,
   EyeOff,
   Sparkles,
   CheckCircle2,
-  ChevronDown,
-  ChevronUp,
   ShieldCheck,
 } from 'lucide-react';
 
@@ -53,7 +51,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showDemoLogins, setShowDemoLogins] = useState(false);
 
   // Q&A Identity Step State
   const [step, setStep] = useState<'credentials' | 'qna'>('credentials');
@@ -121,27 +118,6 @@ export default function LoginPage() {
       router.push('/');
       router.refresh();
     }, 600);
-  };
-
-  const handleDemoLogin = async (demoEmail: string, role: 'gf' | 'bf') => {
-    setEmail(demoEmail);
-    setPassword('Password123!');
-    setError(null);
-    setLoading(true);
-
-    try {
-      const res = await logInAction({ email: demoEmail, password: 'Password123!' });
-      if (res.success) {
-        setSelectedRole(role);
-        setStep('qna');
-      } else {
-        setError(res.error || 'Demo login failed.');
-      }
-    } catch {
-      setError('An unexpected error occurred.');
-    } finally {
-      setLoading(false);
-    }
   };
 
   const currentQuestion = COUPLE_VERIFICATION_QUESTIONS[activeQuestionIdx];
@@ -279,6 +255,15 @@ export default function LoginPage() {
                 </button>
               </form>
 
+              {/* Google Sign-In with Drive Vault */}
+              <div className="relative flex py-2 items-center">
+                <div className="flex-grow border-t border-warmth-200" />
+                <span className="flex-shrink mx-3 text-[11px] text-warmth-500 uppercase tracking-wider font-semibold">Or</span>
+                <div className="flex-grow border-t border-warmth-200" />
+              </div>
+
+              <GoogleSignInButton />
+
               {/* Sign Up Redirect */}
               <div className="pt-4 text-center border-t border-warmth-100">
                 <p className="text-xs text-warmth-600">
@@ -287,41 +272,6 @@ export default function LoginPage() {
                     Create your shared space
                   </Link>
                 </p>
-              </div>
-
-              {/* Collapsible Demo Quick Sign-In (For Play Store Reviewers & Quick Tests) */}
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowDemoLogins(!showDemoLogins)}
-                  className="w-full flex items-center justify-between py-2 text-[11px] font-medium text-warmth-500 hover:text-warmth-800 transition"
-                >
-                  <span>App Review / Demo One-Tap Sign In</span>
-                  {showDemoLogins ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                </button>
-
-                {showDemoLogins && (
-                  <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-warmth-100 animate-fade-in">
-                    <button
-                      type="button"
-                      onClick={() => handleDemoLogin('shivani@example.com', 'gf')}
-                      disabled={loading}
-                      className="flex items-center justify-center gap-1.5 py-2 px-2 text-xs font-medium rounded-lg border border-warmth-200 bg-warmth-50 hover:bg-warmth-100 text-warmth-800 transition"
-                    >
-                      <UserCheck className="w-3.5 h-3.5 text-rosewood-700" />
-                      <span>Shivani (Girlfriend)</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDemoLogin('aadarsh@example.com', 'bf')}
-                      disabled={loading}
-                      className="flex items-center justify-center gap-1.5 py-2 px-2 text-xs font-medium rounded-lg border border-warmth-200 bg-warmth-50 hover:bg-warmth-100 text-warmth-800 transition"
-                    >
-                      <UserCheck className="w-3.5 h-3.5 text-rosewood-700" />
-                      <span>Aadarsh (Boyfriend)</span>
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           )}

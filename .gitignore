@@ -37,4 +37,9 @@ next-env.d.ts
 .gradle/
 .android/
 *.apk
+*.aab
+*.jks
+*.keystore
+dist/*.apk
+dist/*.aab
 

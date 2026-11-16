@@ -3,28 +3,22 @@ import type { CapacitorConfig } from '@capacitor/cli';
 /**
  * Duo Sanctuary - Capacitor Native App Configuration
  * 
- * For Android APK builds:
- * - To test locally over Wi-Fi: set CAPACITOR_SERVER_URL="http://<YOUR_LOCAL_IP>:3000"
- * - To use production deployment: set CAPACITOR_SERVER_URL="https://your-duo-app.netlify.app"
+ * Bundled offline-first inside APK (Option A)
+ * Assets are served locally from device storage for instant launch (<0.2s)
+ * with zero server costs and zero cold-start delay.
  */
-const serverUrl = process.env.CAPACITOR_SERVER_URL || 'https://duo-16pf.onrender.com';
-
-
 const config: CapacitorConfig = {
   appId: 'com.duo.sanctuary',
   appName: 'Duo',
   webDir: 'mobile-shell',
   server: {
-    url: serverUrl,
-    cleartext: true, // Enables local HTTP during local network development
     androidScheme: 'https',
     allowNavigation: [
-      'duo-16pf.onrender.com',
-      '*.onrender.com',
-      '*.supabase.co',
-      'dtwsthyzxprksadrwaiy.supabase.co',
       'fonts.googleapis.com',
       'fonts.gstatic.com',
+      'accounts.google.com',
+      '*.google.com',
+      '*.googleapis.com',
     ],
   },
   android: {
@@ -32,7 +26,14 @@ const config: CapacitorConfig = {
     backgroundColor: '#FAF6EF',
     captureInput: true,
   },
-  plugins: {},
+  plugins: {
+    GoogleAuth: {
+      scopes: ['profile', 'email', 'https://www.googleapis.com/auth/drive.file'],
+      serverClientId: '685551715911-iu0a1t3l79v07i9pller8t7rvm20vedf.apps.googleusercontent.com',
+      forceCodeForRefreshToken: true,
+    },
+  },
 };
 
 export default config;
+

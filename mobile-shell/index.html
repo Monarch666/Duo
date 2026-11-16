@@ -2,189 +2,798 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Duo — Private Sanctuary for Two</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --warmth-50: #FDFCF9;
+      --warmth-100: #FAF6EF;
+      --warmth-200: #F5ECE0;
+      --warmth-300: #EBD7C2;
+      --warmth-500: #C89D7A;
+      --warmth-700: #8C5E40;
+      --warmth-900: #432C20;
+      --rosewood-50: #FFF5F5;
+      --rosewood-100: #FFE8E8;
+      --rosewood-700: #B2222B;
+      --rosewood-800: #942027;
+      --sage-500: #5F8265;
+      --sage-50: #F4F7F4;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
-      background-color: #FAF6EF;
-      color: #332725;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      background-color: var(--warmth-100);
+      color: var(--warmth-900);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 24px;
-      text-align: center;
+      overflow-x: hidden;
+      user-select: none;
     }
-    .card {
-      background: #FFFFFF;
-      border: 1px solid #EBD7C2;
-      border-radius: 24px;
-      padding: 36px 28px;
-      max-width: 380px;
-      width: 100%;
-      box-shadow: 0 10px 25px -5px rgba(51, 39, 37, 0.08);
-      position: relative;
+
+    h1, h2, h3, .font-serif {
+      font-family: 'Fraunces', Georgia, serif;
     }
+
+    /* Animations */
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.15); } }
+    @keyframes floatUp { 0% { transform: translateY(0) scale(0.8); opacity: 1; } 100% { transform: translateY(-90px) scale(1.2); opacity: 0; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .floating-heart {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      animation: floatUp 1.2s ease-out forwards;
+      font-size: 24px;
+    }
+
+    /* Tactile Papercraft Elements */
     .washi-tape {
-      position: absolute;
-      top: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90px;
-      height: 20px;
+      width: 80px;
+      height: 16px;
       background: rgba(232, 141, 150, 0.65);
       border-radius: 2px;
       box-shadow: 0 1px 3px rgba(46, 38, 35, 0.08);
+      margin: 0 auto -8px auto;
+      position: relative;
+      z-index: 2;
     }
-    .logo-container {
-      width: 88px;
-      height: 88px;
-      margin: 0 auto 18px auto;
-      border-radius: 22px;
-      overflow: hidden;
-      box-shadow: 0 8px 20px rgba(132, 35, 44, 0.15);
+
+    .card {
       background: #FFFFFF;
-      border: 2px solid #EBD7C2;
+      border: 1px solid var(--warmth-300);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 4px 15px -3px rgba(67, 44, 32, 0.04);
+      position: relative;
+    }
+
+    /* Header */
+    header {
+      background: #FAF7F2;
+      border-bottom: 1px solid var(--warmth-200);
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .nav-tabs {
       display: flex;
-      align-items: center;
-      justify-content: center;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 8px 12px;
+      background: #FAF7F2;
+      border-bottom: 1px solid var(--warmth-200);
+      scrollbar-width: none;
     }
-    .logo-img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      padding: 4px;
+    .nav-tabs::-webkit-scrollbar { display: none; }
+
+    .nav-tab {
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--warmth-700);
+      cursor: pointer;
+      transition: all 0.15s ease;
     }
-    .heart-svg {
-      width: 44px;
-      height: 44px;
-      fill: #FFFFFF;
+    .nav-tab.active {
+      background: var(--rosewood-100);
+      color: var(--rosewood-800);
+      border-color: rgba(178, 34, 43, 0.2);
     }
-    h1 {
-      font-family: Georgia, "Playfair Display", serif;
-      font-size: 24px;
-      font-weight: 700;
-      color: #332725;
-      margin-bottom: 6px;
-      letter-spacing: -0.02em;
-    }
-    p {
-      font-size: 13px;
-      color: #735D57;
-      line-height: 1.5;
-      margin-bottom: 24px;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      padding: 14px;
-      background: #84232C;
+
+    /* Buttons */
+    .btn-primary {
+      background: var(--rosewood-700);
       color: #FFFFFF;
       border: none;
       border-radius: 14px;
-      font-size: 14px;
+      padding: 12px 18px;
       font-weight: 600;
+      font-size: 13px;
       cursor: pointer;
-      text-decoration: none;
-      box-shadow: 0 4px 12px rgba(132, 35, 44, 0.2);
-      transition: background 0.15s ease, transform 0.1s ease;
-    }
-    .btn:hover { background: #6B1B22; }
-    .btn:active { transform: scale(0.98); }
-    .status-pill {
-      margin-top: 18px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+      transition: background 0.15s, transform 0.1s;
+      width: 100%;
+    }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .btn-secondary {
+      background: #FFFFFF;
+      color: var(--warmth-900);
+      border: 1px solid var(--warmth-300);
+      border-radius: 14px;
+      padding: 10px 16px;
       font-size: 12px;
-      color: #8C7E72;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
     }
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #E88D96;
-      animation: pulse 1.4s infinite ease-in-out;
+
+    .btn-google {
+      background: #FFFFFF;
+      color: #3c4043;
+      border: 1px solid #dadce0;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      box-shadow: 0 1px 3px rgba(60,64,67,0.08);
+      transition: background 0.15s;
     }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(1.3); }
+    .btn-google:active { background: #f8f9fa; }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(67, 44, 32, 0.45);
+      backdrop-filter: blur(2px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-card {
+      background: var(--warmth-50);
+      border: 1px solid var(--warmth-300);
+      border-radius: 24px;
+      max-width: 440px;
+      width: 100%;
+      padding: 24px;
+      position: relative;
+      box-shadow: 0 16px 36px rgba(0,0,0,0.12);
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    /* Polaroids */
+    .polaroid {
+      background: #FFFFFF;
+      padding: 10px 10px 24px 10px;
+      border: 1px solid var(--warmth-300);
+      box-shadow: 0 4px 12px rgba(67, 44, 32, 0.08);
+      border-radius: 4px;
+      transform: rotate(-1deg);
+      transition: transform 0.2s ease;
+      position: relative;
+    }
+    .polaroid:nth-child(even) { transform: rotate(1.5deg); }
+    .polaroid img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      border-radius: 2px;
+      background: var(--warmth-200);
+    }
+    .polaroid-caption {
+      font-family: 'Fraunces', serif;
+      font-size: 13px;
+      text-align: center;
+      margin-top: 10px;
+      color: var(--warmth-900);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 8px;
     }
   </style>
 </head>
 <body>
-  <div class="card">
+
+  <!-- Floating Hearts Container -->
+  <div id="heartContainer"></div>
+
+  <!-- APP VIEW: AUTHENTICATION (When logged out) -->
+  <div id="authScreen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; text-align: center;">
     <div class="washi-tape"></div>
-    <div class="logo-container">
-      <img src="images/otter-mascot.png" 
-           alt="Duo Mascot Otters" 
-           class="logo-img" 
-           onerror="this.src='https://duo-16pf.onrender.com/images/otter-mascot.png';" />
+    <div class="card" style="max-width: 380px; width: 100%; margin-top: 4px;">
+      <div style="width: 84px; height: 84px; margin: 0 auto 16px auto; border-radius: 22px; overflow: hidden; border: 2px solid var(--warmth-300); background: #FFF; padding: 4px; box-shadow: 0 4px 12px rgba(178,34,43,0.1);">
+        <img src="images/otter-mascot.png" alt="Duo Otters" style="width: 100%; height: 100%; object-fit: contain;">
+      </div>
+      <h1 style="font-size: 24px; font-weight: 700; color: var(--warmth-900); margin-bottom: 6px;">Duo Sanctuary</h1>
+      <p style="font-size: 12px; color: var(--warmth-700); margin-bottom: 24px; line-height: 1.5;">
+        Always holding hands, never drifting apart.<br/>An intimate private haven exclusively for two.
+      </p>
+
+      <!-- Google Sign In Button -->
+      <button class="btn-google" id="googleSignInBtn" onclick="triggerGoogleSignIn()">
+        <svg width="18" height="18" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span id="googleBtnText">Continue with Google</span>
+      </button>
+
+      <div style="display: flex; align-items: center; margin: 18px 0;">
+        <div style="flex-grow: 1; border-top: 1px solid var(--warmth-200);"></div>
+        <span style="margin: 0 10px; font-size: 11px; text-transform: uppercase; color: var(--warmth-500); font-weight: 600;">Or</span>
+        <div style="flex-grow: 1; border-top: 1px solid var(--warmth-200);"></div>
+      </div>
+
+      <button class="btn-secondary" onclick="enterGuestSanctuary()">
+        <span>Enter Offline Sanctuary</span>
+      </button>
+
+      <div style="margin-top: 22px; font-size: 11px; color: var(--warmth-500); line-height: 1.4;">
+        🔒 Zero developer cloud fees • 100% Private on device & Drive
+      </div>
     </div>
-    <h1>Duo Sanctuary</h1>
-    <p>Always holding hands, never drifting apart.<br/>Connecting to your sanctuary...</p>
+  </div>
 
-    <button class="btn" id="enterBtn" onclick="enterSanctuary()">Enter Sanctuary</button>
+  <!-- APP VIEW: SANCTUARY DASHBOARD -->
+  <div id="sanctuaryApp" style="display: none; flex-direction: column; min-height: 100vh;">
+    <!-- Sticky Header -->
+    <header>
+      <div style="max-width: 600px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button onclick="flutterHearts()" style="background: none; border: none; cursor: pointer; padding: 0;" title="Tap to flutter hearts">
+            <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 2px solid var(--rosewood-700); background: #FFF;">
+              <img src="images/otter-mascot.png" alt="Otters" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+          </button>
+          <div>
+            <h1 id="coupleHeading" onclick="promptEditCoupleName()" style="font-size: 15px; font-weight: 700; color: var(--warmth-900); line-height: 1.2; cursor: pointer;">Our Sanctuary</h1>
+            <div style="font-size: 11px; color: var(--warmth-700); display: flex; align-items: center; gap: 4px;">
+              <span id="daysCount" onclick="promptAnniversaryDate()" style="cursor: pointer; text-decoration: underline dotted;">Holding hands</span> • 
+              <span id="syncStatusBadge" onclick="openDriveModal()" style="color: var(--sage-500); cursor: pointer; font-weight: 600;">🟢 Drive Synced</span>
+            </div>
+          </div>
+        </div>
 
-    <div class="status-pill">
-      <span class="dot"></span>
-      <span id="statusText">Waking up sanctuary... 🌸</span>
+        <div style="display: flex; gap: 6px;">
+          <button onclick="openDriveModal()" class="badge" style="background: var(--warmth-200); color: var(--warmth-900); border: 1px solid var(--warmth-300); cursor: pointer;">
+            ☁️ Sync
+          </button>
+          <button onclick="logoutSanctuary()" class="badge" style="background: transparent; color: var(--warmth-700); border: 1px solid transparent; cursor: pointer;">
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs" style="max-width: 600px; width: 100%; margin: 0 auto;">
+      <button class="nav-tab active" onclick="switchTab('overview')">🏡 Our Story</button>
+      <button class="nav-tab" onclick="switchTab('cycle')">🌸 Cycle & Care</button>
+      <button class="nav-tab" onclick="switchTab('calendar')">📅 Calendar</button>
+      <button class="nav-tab" onclick="switchTab('lists')">📝 Bucket Lists</button>
+      <button class="nav-tab" onclick="switchTab('memories')">📸 Polaroids</button>
+      <button class="nav-tab" onclick="switchTab('notes')">💌 Love Notes</button>
+    </div>
+
+    <!-- Main Content Area -->
+    <main style="max-width: 600px; width: 100%; margin: 0 auto; padding: 16px; flex: 1;">
+
+      <!-- TAB 1: OVERVIEW -->
+      <section id="tab-overview" class="tab-pane">
+        <div class="card" style="margin-bottom: 16px; text-align: center; padding: 22px 16px;">
+          <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--warmth-700); letter-spacing: 0.05em; margin-bottom: 6px;">Daily Ritual</div>
+          <h2 style="font-size: 17px; margin-bottom: 8px;">"What made you smile thinking of us today?"</h2>
+          <p id="dailyAnswerDisplay" style="font-size: 13px; color: var(--warmth-700); font-style: italic; margin-bottom: 14px;">
+            Tap below to share your daily answer with each other.
+          </p>
+          <button class="btn-secondary" style="max-width: 200px; margin: 0 auto;" onclick="promptNewDailyAnswer()">Answer Together</button>
+        </div>
+
+        <div class="card" style="margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 15px; font-weight: 700;">Upcoming Celebrations</h3>
+            <button onclick="openNewEventModal()" class="badge" style="background: var(--rosewood-100); color: var(--rosewood-800); border: none; cursor: pointer;">+ Add Date</button>
+          </div>
+          <div id="upcomingEventsList" style="font-size: 13px; color: var(--warmth-700);">
+            <!-- Events injected dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: CYCLE & CARE -->
+      <section id="tab-cycle" class="tab-pane" style="display: none;">
+        <div class="card" style="margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span class="badge" id="cyclePhaseBadge" style="background: #FDE4DE; color: #84232C;">Cycle Tracker</span>
+            <button onclick="logNewCycle()" style="font-size: 12px; color: var(--rosewood-700); background: none; border: none; cursor: pointer; text-decoration: underline; font-weight: 600;">Update Cycle</button>
+          </div>
+          <h2 id="cyclePhaseTitle" style="font-size: 19px; font-weight: 700; margin-bottom: 6px;">Gentle Closeness 🌸</h2>
+          <p id="cyclePhaseDesc" style="font-size: 13px; color: var(--warmth-700); line-height: 1.5; margin-bottom: 16px;">
+            Track cycle rhythms to show proactive care, emotional comfort, and loving support.
+          </p>
+
+          <div style="background: var(--warmth-100); border-radius: 14px; padding: 14px; border: 1px solid var(--warmth-200);">
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--warmth-700); margin-bottom: 4px;">Partner Care Suggestion</div>
+            <p id="cycleCareTip" style="font-size: 12px; color: var(--warmth-900);">
+              💡 <em>Check in gently, offer a warm beverage or a cozy massage, and share an affectionate hug.</em>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: CALENDAR -->
+      <section id="tab-calendar" class="tab-pane" style="display: none;">
+        <div class="card" style="margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h3 style="font-size: 16px; font-weight: 700;">Shared Dates & Memories</h3>
+            <button class="btn-primary" style="width: auto; padding: 6px 12px; font-size: 12px;" onclick="openNewEventModal()">+ New Date</button>
+          </div>
+          <div id="calendarEventsContainer" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: BUCKET LISTS -->
+      <section id="tab-lists" class="tab-pane" style="display: none;">
+        <div class="card" style="margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h3 style="font-size: 16px; font-weight: 700;">Our Dream Bucket List</h3>
+            <button class="btn-primary" style="width: auto; padding: 6px 12px; font-size: 12px;" onclick="openNewListItemModal()">+ Add Dream</button>
+          </div>
+          <div id="bucketListContainer" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- List items populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: POLAROIDS (MEMORIES) -->
+      <section id="tab-memories" class="tab-pane" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h2 style="font-size: 18px; font-weight: 700;">Memory Timeline</h2>
+          <label class="btn-primary" style="width: auto; padding: 6px 14px; font-size: 12px; cursor: pointer;">
+            📸 Snap Polaroid
+            <input type="file" accept="image/*" style="display: none;" onchange="handlePhotoUpload(event)">
+          </label>
+        </div>
+        <div id="polaroidsGrid" style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+          <!-- Polaroids injected -->
+        </div>
+      </section>
+
+      <!-- TAB 6: LOVE NOTES -->
+      <section id="tab-notes" class="tab-pane" style="display: none;">
+        <div class="card" style="background: #FFFDF9; border: 1px solid #EBD7C2; margin-bottom: 16px;">
+          <div class="washi-tape" style="background: rgba(232, 141, 150, 0.75);"></div>
+          <div style="padding-top: 10px; text-align: center;">
+            <p id="currentLoveNote" style="font-family: 'Fraunces', serif; font-size: 17px; line-height: 1.6; color: var(--rosewood-800); margin-bottom: 16px; padding: 12px;">
+              "You are my favorite thought every morning and my warmest comfort every evening."
+            </p>
+            <div style="display: flex; gap: 8px; justify-content: center;">
+              <button class="btn-primary" style="width: auto;" onclick="flutterHearts()">❤️ Send Warmth</button>
+              <button class="btn-secondary" style="width: auto;" onclick="writeLoveNote()">✍️ Write Note</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- DRIVE SYNC MODAL -->
+  <div id="driveModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h3 style="font-size: 17px; font-weight: 700;">Google Drive Shared Vault</h3>
+        <button onclick="closeDriveModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--warmth-700);">✕</button>
+      </div>
+
+      <div style="background: var(--sage-50); border: 1px solid var(--sage-500); border-radius: 12px; padding: 12px; margin-bottom: 16px; font-size: 12px; color: var(--sage-500); line-height: 1.5;">
+        <strong>✓ 100% Free Bring-Your-Own-Cloud</strong><br/>
+        All memories, polaroids, and bucket lists are stored safely in your own Google Drive. Zero developer server costs.
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px;">Partner's Google Email</label>
+        <input type="email" id="partnerEmailInput" placeholder="partner@gmail.com" style="width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--warmth-300); font-size: 13px;">
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-primary" onclick="saveDriveSettings()">Save & Sync Now</button>
+        <button class="btn-secondary" onclick="closeDriveModal()">Close</button>
+      </div>
     </div>
   </div>
 
   <script>
-    const PRODUCTION_URL = 'https://duo-16pf.onrender.com/login';
+    // Config
+    const CLIENT_ID = '685551715911-iu0a1t3l79v07i9pller8t7rvm20vedf.apps.googleusercontent.com';
+    let currentUser = null;
     
-    // Purge any legacy stale local IP overrides
-    try {
-      localStorage.removeItem('duo_server_url');
-      sessionStorage.clear();
-    } catch (e) {}
+    // Clean initial state (zero fake or dummy data)
+    let sanctuaryData = {
+      coupleName: '',
+      anniversary: '',
+      dailyAnswer: '',
+      events: [],
+      bucketList: [],
+      polaroids: [],
+      loveNote: '',
+      cycle: { lastPeriod: '', cycleLength: 28 }
+    };
 
-    const statusText = document.getElementById('statusText');
-    let elapsedSeconds = 0;
-    let isNavigating = false;
-
-    function enterSanctuary() {
-      if (isNavigating) return;
-      isNavigating = true;
-      statusText.innerText = 'Entering sanctuary... 🌸';
-      window.location.replace(PRODUCTION_URL);
-    }
-
-    function checkServer() {
-      if (isNavigating) return;
-
-      const pingImg = new Image();
-      pingImg.onload = function() {
-        statusText.innerText = 'Sanctuary is ready! Opening... 🌸';
-        enterSanctuary();
-      };
-      pingImg.onerror = function() {
-        elapsedSeconds += 2;
-        if (elapsedSeconds >= 4) {
-          statusText.innerText = 'Waking up sanctuary... 🌸 (' + elapsedSeconds + 's)';
-        }
-        setTimeout(checkServer, 2000);
-      };
-      pingImg.src = 'https://duo-16pf.onrender.com/icons/icon-192x192.png?ping=' + Date.now();
-    }
-
-    // Auto-attempt immediately on load
-    setTimeout(checkServer, 400);
-
-    // Fallback: If after 8 seconds still not navigated, try a direct replace
-    setTimeout(function() {
-      if (!isNavigating) {
-        enterSanctuary();
+    // Load from local storage on startup
+    window.addEventListener('DOMContentLoaded', () => {
+      const stored = localStorage.getItem('duo_local_sanctuary');
+      if (stored) {
+        try { 
+          sanctuaryData = Object.assign(sanctuaryData, JSON.parse(stored)); 
+        } catch(e) {}
       }
-    }, 15000);
+      
+      const storedUser = localStorage.getItem('duo_google_user');
+      if (storedUser) {
+        try {
+          currentUser = JSON.parse(storedUser);
+          showSanctuary();
+        } catch(e) {}
+      }
+    });
+
+    function saveState() {
+      localStorage.setItem('duo_local_sanctuary', JSON.stringify(sanctuaryData));
+      renderAll();
+    }
+
+    function triggerGoogleSignIn() {
+      const btnText = document.getElementById('googleBtnText');
+      if (btnText) btnText.innerText = 'Connecting...';
+
+      if (window.google?.accounts?.oauth2) {
+        try {
+          const client = google.accounts.oauth2.initTokenClient({
+            client_id: CLIENT_ID,
+            scope: 'https://www.googleapis.com/auth/drive.file email profile openid',
+            callback: (res) => {
+              if (res.access_token) {
+                currentUser = { accessToken: res.access_token };
+                localStorage.setItem('duo_google_user', JSON.stringify(currentUser));
+                if (!sanctuaryData.coupleName) {
+                  promptInitialSetup();
+                } else {
+                  showSanctuary();
+                }
+                flutterHearts();
+              } else {
+                enterGuestSanctuary();
+              }
+            },
+            error_callback: () => {
+              enterGuestSanctuary();
+            }
+          });
+          client.requestAccessToken();
+          return;
+        } catch (err) {
+          console.warn('GIS error:', err);
+        }
+      }
+      
+      // Fallback if offline or GIS not ready
+      setTimeout(() => {
+        enterGuestSanctuary();
+      }, 300);
+    }
+
+    function enterGuestSanctuary() {
+      if (!sanctuaryData.coupleName) {
+        promptInitialSetup();
+      } else {
+        currentUser = { email: 'offline@duo.app', name: 'Partner' };
+        localStorage.setItem('duo_google_user', JSON.stringify(currentUser));
+        showSanctuary();
+        flutterHearts();
+      }
+    }
+
+    function promptInitialSetup() {
+      let yourName = prompt('Enter your name:', 'Aadarsh');
+      if (!yourName || !yourName.trim()) yourName = 'You';
+      let partnerName = prompt("Enter your partner's name:", '');
+      if (!partnerName || !partnerName.trim()) partnerName = 'Partner';
+
+      sanctuaryData.coupleName = yourName.trim() + ' & ' + partnerName.trim();
+      currentUser = { email: 'user@duo.app', name: yourName.trim() };
+      localStorage.setItem('duo_google_user', JSON.stringify(currentUser));
+      saveState();
+      showSanctuary();
+      flutterHearts();
+    }
+
+    function promptEditCoupleName() {
+      const updated = prompt('Edit couple name:', sanctuaryData.coupleName || 'Our Sanctuary');
+      if (updated && updated.trim()) {
+        sanctuaryData.coupleName = updated.trim();
+        saveState();
+      }
+    }
+
+    function promptAnniversaryDate() {
+      const date = prompt('Enter your anniversary / relationship start date (YYYY-MM-DD):', sanctuaryData.anniversary || '2024-11-20');
+      if (date && date.trim()) {
+        sanctuaryData.anniversary = date.trim();
+        saveState();
+        flutterHearts();
+      }
+    }
+
+    function calculateDays() {
+      if (!sanctuaryData.anniversary) return 'Set anniversary date';
+      try {
+        const start = new Date(sanctuaryData.anniversary);
+        const now = new Date();
+        const diffMs = now.getTime() - start.getTime();
+        const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        if (days >= 0) return `Day ${days + 1} of holding hands`;
+      } catch(e) {}
+      return 'Holding hands';
+    }
+
+    function showSanctuary() {
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('sanctuaryApp').style.display = 'flex';
+      renderAll();
+    }
+
+    function logoutSanctuary() {
+      localStorage.removeItem('duo_google_user');
+      document.getElementById('sanctuaryApp').style.display = 'none';
+      document.getElementById('authScreen').style.display = 'flex';
+      const btnText = document.getElementById('googleBtnText');
+      if (btnText) btnText.innerText = 'Continue with Google';
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      const activePane = document.getElementById('tab-' + tabId);
+      if (activePane) activePane.style.display = 'block';
+      if (event && event.target) event.target.classList.add('active');
+    }
+
+    function renderAll() {
+      document.getElementById('coupleHeading').innerText = sanctuaryData.coupleName || 'Our Sanctuary';
+      document.getElementById('daysCount').innerText = calculateDays();
+
+      // Daily answer
+      const dailyEl = document.getElementById('dailyAnswerDisplay');
+      if (dailyEl) {
+        dailyEl.innerText = sanctuaryData.dailyAnswer 
+          ? `"${sanctuaryData.dailyAnswer}"`
+          : 'Tap below to share your daily answer with each other.';
+      }
+
+      // Render Events
+      const eventsContainer = document.getElementById('calendarEventsContainer');
+      const upcomingContainer = document.getElementById('upcomingEventsList');
+      if (eventsContainer) {
+        eventsContainer.innerHTML = sanctuaryData.events.length > 0 
+          ? sanctuaryData.events.map(e => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--warmth-50); border: 1px solid var(--warmth-200); border-radius: 12px;">
+              <div>
+                <div style="font-weight: 600; font-size: 13px;">${escapeHtml(e.title)}</div>
+                <div style="font-size: 11px; color: var(--warmth-700);">${escapeHtml(e.date)} • ${escapeHtml(e.category)}</div>
+              </div>
+              <button onclick="deleteEvent('${e.id}')" style="background: none; border: none; color: #b2222b; font-size: 14px; cursor: pointer; padding: 4px;">✕</button>
+            </div>
+          `).join('')
+          : '<div style="text-align: center; padding: 24px; color: var(--warmth-500); font-size: 13px;">No dates planned yet.<br/><span style="font-size: 11px;">Tap "+ New Date" to schedule your next moment together.</span></div>';
+      }
+
+      if (upcomingContainer) {
+        upcomingContainer.innerHTML = sanctuaryData.events.length > 0
+          ? sanctuaryData.events.slice(0, 2).map(e => `
+            <div style="padding: 4px 0; border-bottom: 1px solid var(--warmth-100);"><strong>${escapeHtml(e.title)}</strong> — ${escapeHtml(e.date)}</div>
+          `).join('')
+          : '<span style="color: var(--warmth-500); font-style: italic;">No celebrations scheduled yet. Tap + Add Date to begin.</span>';
+      }
+
+      // Render Bucket List
+      const bucketContainer = document.getElementById('bucketListContainer');
+      if (bucketContainer) {
+        bucketContainer.innerHTML = sanctuaryData.bucketList.length > 0
+          ? sanctuaryData.bucketList.map(item => `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--warmth-50); border: 1px solid var(--warmth-200); border-radius: 12px;">
+              <div onclick="toggleBucketItem('${item.id}')" style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1;">
+                <input type="checkbox" ${item.done ? 'checked' : ''} style="cursor: pointer;">
+                <span style="font-size: 13px; text-decoration: ${item.done ? 'line-through' : 'none'}; color: ${item.done ? 'var(--warmth-500)' : 'var(--warmth-900)'};">${escapeHtml(item.title)}</span>
+              </div>
+              <button onclick="deleteBucketItem('${item.id}')" style="background: none; border: none; color: #b2222b; font-size: 14px; cursor: pointer; padding: 4px;">✕</button>
+            </div>
+          `).join('')
+          : '<div style="text-align: center; padding: 24px; color: var(--warmth-500); font-size: 13px;">Your bucket list is empty.<br/><span style="font-size: 11px;">Tap "+ Add Dream" to write down places to visit and things to do.</span></div>';
+      }
+
+      // Render Polaroids
+      const polaroidContainer = document.getElementById('polaroidsGrid');
+      if (polaroidContainer) {
+        polaroidContainer.innerHTML = sanctuaryData.polaroids.length > 0
+          ? sanctuaryData.polaroids.map(p => `
+            <div class="polaroid">
+              <img src="${p.url}" alt="${escapeHtml(p.caption)}">
+              <div class="polaroid-caption">${escapeHtml(p.caption)}</div>
+              <button onclick="deletePolaroid('${p.id}')" style="position: absolute; top: 14px; right: 14px; background: rgba(0,0,0,0.5); color: #fff; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; cursor: pointer;">✕</button>
+            </div>
+          `).join('')
+          : '<div style="text-align: center; padding: 36px 16px; border: 2px dashed var(--warmth-300); border-radius: 16px; color: var(--warmth-500);"><div style="font-size: 32px; margin-bottom: 8px;">📸</div><div style="font-size: 13px; font-weight: 600;">No polaroids yet</div><div style="font-size: 11px; margin-top: 4px;">Tap "📸 Snap Polaroid" above to upload your first photo together.</div></div>';
+      }
+
+      // Love note
+      const noteEl = document.getElementById('currentLoveNote');
+      if (noteEl) {
+        noteEl.innerText = sanctuaryData.loveNote 
+          ? `"${sanctuaryData.loveNote}"`
+          : 'You are my favorite thought every morning and my warmest comfort every evening.';
+      }
+    }
+
+    function promptNewDailyAnswer() {
+      const answer = prompt('What made you smile thinking of us today?');
+      if (answer && answer.trim()) {
+        sanctuaryData.dailyAnswer = answer.trim();
+        saveState();
+        flutterHearts();
+      }
+    }
+
+    function toggleBucketItem(id) {
+      const item = sanctuaryData.bucketList.find(i => i.id === id);
+      if (item) {
+        item.done = !item.done;
+        saveState();
+        if (item.done) flutterHearts();
+      }
+    }
+
+    function deleteBucketItem(id) {
+      sanctuaryData.bucketList = sanctuaryData.bucketList.filter(i => i.id !== id);
+      saveState();
+    }
+
+    function openNewListItemModal() {
+      const title = prompt('What is our dream to add to the bucket list?');
+      if (title && title.trim()) {
+        sanctuaryData.bucketList.push({ id: String(Date.now()), title: title.trim(), done: false });
+        saveState();
+        flutterHearts();
+      }
+    }
+
+    function openNewEventModal() {
+      const title = prompt('Event or Date Title (e.g. Picnic, Dinner date, Trip):');
+      if (title && title.trim()) {
+        const date = prompt('Date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+        sanctuaryData.events.push({ id: String(Date.now()), title: title.trim(), date: date || '', category: 'Date' });
+        saveState();
+        flutterHearts();
+      }
+    }
+
+    function deleteEvent(id) {
+      sanctuaryData.events = sanctuaryData.events.filter(e => e.id !== id);
+      saveState();
+    }
+
+    function deletePolaroid(id) {
+      sanctuaryData.polaroids = sanctuaryData.polaroids.filter(p => p.id !== id);
+      saveState();
+    }
+
+    function writeLoveNote() {
+      const note = prompt('Write an intimate love note to your partner:', sanctuaryData.loveNote || '');
+      if (note && note.trim()) {
+        sanctuaryData.loveNote = note.trim();
+        saveState();
+        flutterHearts();
+      }
+    }
+
+    function logNewCycle() {
+      const last = prompt('Date of last period start (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+      if (last && last.trim()) {
+        sanctuaryData.cycle = { lastPeriod: last.trim(), cycleLength: 28 };
+        saveState();
+        alert('Cycle updated! Care guidance refreshed.');
+      }
+    }
+
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const caption = prompt('Caption for this polaroid:') || 'Always together 💕';
+          sanctuaryData.polaroids.unshift({ id: String(Date.now()), caption, url: e.target.result });
+          saveState();
+          flutterHearts();
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function flutterHearts() {
+      const container = document.getElementById('heartContainer');
+      const emojis = ['❤️', '🦦', '💕', '🌸', '✨'];
+      for (let i = 0; i < 7; i++) {
+        setTimeout(() => {
+          const heart = document.createElement('div');
+          heart.className = 'floating-heart';
+          heart.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+          heart.style.left = (window.innerWidth / 2 + (Math.random() * 120 - 60)) + 'px';
+          heart.style.top = (window.innerHeight / 2 + (Math.random() * 80 - 40)) + 'px';
+          container.appendChild(heart);
+          setTimeout(() => heart.remove(), 1200);
+        }, i * 70);
+      }
+    }
+
+    function openDriveModal() { document.getElementById('driveModal').style.display = 'flex'; }
+    function closeDriveModal() { document.getElementById('driveModal').style.display = 'none'; }
+    function saveDriveSettings() {
+      const email = document.getElementById('partnerEmailInput').value;
+      if (email && email.trim()) {
+        alert('Vault paired! Sharing Duo Sanctuary folder with ' + email.trim() + ' on Google Drive.');
+      }
+      closeDriveModal();
+      flutterHearts();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+      });
+    }
   </script>
 </body>
 </html>

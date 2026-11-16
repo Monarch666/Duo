@@ -46,6 +46,7 @@ import CycleTrackerView from '@/components/cycle/CycleTrackerView';
 import CoupleKeyModal from '@/components/couple/CoupleKeyModal';
 import LoveNoteComposerModal from '@/components/notes/LoveNoteComposerModal';
 import DailyPromptModal from '@/components/prompts/DailyPromptModal';
+import DriveSyncPill from '@/components/sync/DriveSyncPill';
 import { calculateCycleInfo } from '@/lib/utils/cycle';
 import {
   tapLoveNoteAction,
@@ -816,6 +817,9 @@ export default function DashboardClient({
           </div>
 
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            {/* Google Drive Shared Vault Sync Indicator */}
+            <DriveSyncPill />
+
             {/* Secret Couple Key button */}
             <button
               type="button"

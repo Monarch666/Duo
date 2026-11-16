@@ -47,7 +47,7 @@ interface CoupleKeyModalProps {
     };
   };
   currentUserName: string;
-  syncStatus: 'connected' | 'fallback_polling' | 'connecting';
+  syncStatus: 'connected' | 'fallback_polling' | 'connecting' | 'disconnected';
 }
 
 export default function CoupleKeyModal({

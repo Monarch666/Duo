@@ -14,7 +14,9 @@
     "backup": "tsx scripts/backup.ts",
     "cap:sync": "cap sync",
     "cap:open": "cap open android",
-    "apk:build": "cmd /c \"set JAVA_HOME=C:\\Users\\aadar\\.jdks\\jdk-17.0.12+7&& cd android && gradlew.bat assembleDebug\"",
+    "apk:build": "cmd /c \"set JAVA_HOME=C:\\Users\\aadar\\.jdks\\jdk-17.0.12+7&& set GRADLE_USER_HOME=E:\\Relationship manager\\.gradle&& cd android && gradlew.bat assembleDebug\"",
+    "apk:release": "cmd /c \"set JAVA_HOME=C:\\Users\\aadar\\.jdks\\jdk-17.0.12+7&& set GRADLE_USER_HOME=E:\\Relationship manager\\.gradle&& cd android && gradlew.bat assembleRelease\"",
+    "bundle:release": "cmd /c \"set JAVA_HOME=C:\\Users\\aadar\\.jdks\\jdk-17.0.12+7&& set GRADLE_USER_HOME=E:\\Relationship manager\\.gradle&& cd android && gradlew.bat bundleRelease\"",
     "keep-alive": "node scripts/keep-alive.js"
   },
   "dependencies": {
