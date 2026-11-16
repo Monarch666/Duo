@@ -2,6 +2,8 @@
 
 > **An intimate, private shared sanctuary built exclusively for exactly two partners.**  
 > 100% self-hosted, running entirely on your local machine with zero external cloud dependencies.
+> 
+> 🔒 **Legal & Privacy**: [Privacy Policy](privacy.html) • [Terms of Service](terms.html) • [Contact Support](mailto:aadarshsinha16@gmail.com)
 
 ---
 
